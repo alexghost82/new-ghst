@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — תוכנית הכשרת מפעילים: נספח שדה חזותי</title>
+<style>
+  :root {
+    --bg-primary: #ffffff; --bg-sidebar: #f7f7f7; --bg-surface: #f0f0f0;
+    --bg-surface-hover: #e8e8e8; --bg-code: #fafafa;
+    --text-primary: #161616; --text-secondary: #5d5d5d; --text-muted: #9a9a9a;
+    --border-subtle: #e2e2e2; --accent: #161616; --accent-ink: #ffffff;
+    --alert: #c43c3c;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #ededed; color: var(--text-primary); font-family: var(--sans); -webkit-font-smoothing: antialiased; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+
+  .page { width: 210mm; height: 297mm; margin: 0 auto; background: var(--bg-primary); display: flex; overflow: hidden; position: relative; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  .sidebar { width: 58mm; flex-shrink: 0; background: var(--bg-sidebar); border-left: 1px solid var(--border-subtle); display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 6px 14px; }
+  .brand img { width: 30px; height: 30px; border-radius: 9px; display: block; }
+  .brand .name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .brand .name .sub { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+  .newchat { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary); font-size: 13px; background: var(--bg-primary); }
+  .newchat .plus { width: 16px; height: 16px; position: relative; opacity: 0.85; }
+  .newchat .plus::before, .newchat .plus::after { content: ""; position: absolute; background: var(--text-secondary); }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+  .nav-label { font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 14px 10px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; height: 36px; padding: 0 11px; border-radius: 11px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 16px; flex-shrink: 0; }
+  .nav-item.active { background: var(--bg-surface-hover); color: var(--text-primary); }
+  .nav-item.active .ix { color: var(--text-primary); }
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot { border-top: 1px solid var(--border-subtle); padding: 12px 10px 2px; font-size: 10.5px; color: var(--text-muted); line-height: 1.5; }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border-bottom: 1px solid var(--border-subtle); }
+  .topbar .title { font-size: 14px; font-weight: 600; }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread { flex: 1; overflow: hidden; padding: 18px 22px 6px; display: flex; flex-direction: column; }
+  .wrap { width: 100%; max-width: 168mm; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+  .msg-user { display: flex; justify-content: flex-start; }
+  .msg-user .bubble { max-width: 80%; background: var(--bg-surface); border-radius: 18px; padding: 9px 15px; font-size: 13px; line-height: 1.5; }
+
+  .msg-ai { display: flex; gap: 12px; }
+  .msg-ai .av { width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; overflow: hidden; margin-top: 2px; }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body .kicker { font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; font-family: var(--mono); direction: ltr; text-align: right; }
+  .msg-ai .body .intro { font-size: 12px; line-height: 1.6; color: var(--text-primary); }
+  .msg-ai .body .intro b { font-weight: 600; }
+
+  /* screenshot figure with instruction layer (markers stay physically placed) */
+  .fig { margin-top: 10px; position: relative; border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .fig img { width: 100%; display: block; }
+  .marker { position: absolute; width: 19px; height: 19px; margin: -9.5px 0 0 -9.5px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--mono); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px rgba(255,255,255,0.95), 0 0 0 3.5px rgba(22,22,22,0.35), 0 1px 4px rgba(0,0,0,0.4); }
+  .marker.red { background: var(--alert); box-shadow: 0 0 0 2px rgba(255,255,255,0.95), 0 0 0 3.5px rgba(196,60,60,0.4), 0 1px 4px rgba(0,0,0,0.4); }
+  .figbar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 4px 10px; background: linear-gradient(to top, rgba(22,22,22,0.55), transparent); direction: ltr; }
+  .figbar span { font-family: var(--mono); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.9); }
+  .maskbox { position: absolute; background: rgba(120,120,120,0.92); border: 1px solid rgba(255,255,255,0.6); display: flex; align-items: flex-end; justify-content: center; }
+  .maskbox span { font-family: var(--mono); font-size: 6.5px; letter-spacing: 0.14em; color: rgba(255,255,255,0.85); padding-bottom: 3px; text-transform: uppercase; direction: ltr; }
+
+  /* step legend */
+  .legend { margin-top: 10px; display: flex; flex-direction: column; }
+  .legend .step { display: flex; gap: 10px; align-items: flex-start; padding: 6.5px 0; border-bottom: 1px solid var(--border-subtle); }
+  .legend .step:last-child { border-bottom: none; }
+  .legend .num { flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--mono); font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .legend .num.red { background: var(--alert); }
+  .legend .tx { min-width: 0; font-size: 11px; line-height: 1.5; }
+  .legend .tx b { font-weight: 600; color: var(--text-primary); }
+  .legend .tx span { color: var(--text-secondary); }
+
+  .composer-wrap { padding: 6px 22px 14px; }
+  .composer { max-width: 168mm; margin: 0 auto; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 24px; padding-block: 9px; padding-inline-start: 18px; padding-inline-end: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .composer .ph { flex: 1; font-size: 12.5px; color: var(--text-muted); }
+  .composer .send { width: 27px; height: 27px; border-radius: 50%; background: var(--accent); flex-shrink: 0; position: relative; }
+  .composer .send::after { content: ""; position: absolute; left: 50%; top: 52%; width: 7px; height: 7px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink); transform: translate(-50%,-50%) rotate(-45deg); }
+  .disclaimer { max-width: 168mm; margin: 7px auto 0; text-align: center; font-size: 10px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ APPENDIX PAGE 01 — כיצד לקרוא את הנספח הזה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item active"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">כיצד לקרוא את הנספח הזה</div>
+      <div class="meta mono ltr">A-01 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">הראה לי את הקונסולה בדיוק כפי שאראה אותה.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">הנספח הזה הוא הלוויין החזותי לתוכנית הכשרת המפעילים. כל עמוד מציג <b>צילום מסך אמיתי ולא ערוך</b> של קונסולת Ghost, עם סמנים ממוספרים הממוקמים על השליטות האמיתיות. המקרא תחת כל תמונה אומר לך שלושה דברים לכל סמן: מה לעשות, מה המשמעות, ומה קורה אחר כך. הקונסולה פועלת בעברית, מימין לשמאל — סרגל השיחות יושב מימין, הצ'אט ממלא את השאר.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/01-console-home.png" alt="כיצד לקרוא את הנספח הזה" />
+
+        <span class="marker" style="left:89%;top:2.9%;">1</span>
+        <span class="marker" style="left:82.4%;top:2.9%;">2</span>
+        <span class="marker" style="left:89.3%;top:8.5%;">3</span>
+        <span class="marker" style="left:89.5%;top:30%;">4</span>
+        <span class="marker" style="left:92%;top:62%;">5</span>
+        <span class="marker" style="left:86%;top:96.8%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>שעון המפעיל</b> — <span>זמן מקומי עם שניות אדומות — ההפניה שלך בכל פעם שאתה רושם זמן אירוע.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>שיחה חדשה (+)</b> — <span>לחיצה אחת פותחת שיחה טרייה — יחידת העבודה הבסיסית ב-Ghost.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>לשוניות תצוגה: צ'אט / ניהול אירועים</b> — <span>צ'אט הוא המקום שבו אתה מתשאל מצלמות; אירועים הם לוח התיקים. תג מונה מציג תיקים ממתינים.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>עץ הארגון</b> — <span>אזורים מכילים קבוצות מצלמות, קבוצות מכילות שיחות — מפעל מגם ציפורי מחזיק כאן שתי קבוצות.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>שיחות חופשיות</b> — <span>כל מה שעדיין לא תויק לאזור. שמור את הרשימה הזו קצרה — תייק את מה שאתה שומר.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>רצועת התחתית</b> — <span>משתמש פעיל, מתג ערכת נושא, הגדרות והתנתקות — זהות ושליטות קונסולה בשורה אחת.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">כל עמוד: מסך אמיתי אחד, מיומנות אחת…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 02 — Secure Access ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item active"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Secure Access</div>
+      <div class="meta mono ltr">A-02 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך נראית הדלת אל הקונסולה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">מסך ה-Secure Access הוא הדלת היחידה אל הקונסולה. הוא תמיד כהה, תמיד באנגלית — נקודת בידוק מכוונת לפני הממשק המבצעי.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/00-secure-access.png" alt="Secure Access" />
+
+        <span class="marker" style="left:50%;top:39%;">1</span>
+        <span class="marker" style="left:50%;top:44.5%;">2</span>
+        <span class="marker" style="left:58.3%;top:44.5%;">3</span>
+        <span class="marker" style="left:50%;top:53%;">4</span>
+        <span class="marker" style="left:50%;top:88%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>הקלד את שם הסוכן שלך ב-“Agent Access”</b> — <span>זהות המפעיל שלך — כל פעולה שתעשה משויכת אליה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>הדבק את המפתח שלך ב-“Ghost Key”</b> — <span>האישור עצמו. לעולם אל תקליד אותו כשמישהו יכול לראות את המסך שלך.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>מתג העין</b> — <span>חושף את המפתח בזמן ההדבקה, מסתיר אותו שוב בלחיצה. ברירת מחדל: מוסתר.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>לחץ “Sign in”</b> — <span>אישורים תקפים מכניסים אותך ישירות לקונסולה. לינק כניסה מהירה מדלג על המסך הזה לגמרי.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>תדריכים ומסמכים</b> — <span>מסמכי PDF ציבוריים המוצעים בדלת — אלה למבקרים; העבודה שלך מתחילה אחרי הכניסה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">התחבר עם אישורי סוכן…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 03 — יצירת שיחה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item active"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">יצירת שיחה</div>
+      <div class="meta mono ltr">A-03 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">לחצתי + . במה אני מסתכל?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">לחיצה אחת על + ואתה עומד בתוך שיחה טרייה. שום דבר לא מוגדר עדיין — אין מצלמה, אין כללים — והריקנות הזו היא העניין: כל שיחה גדלה למצלמה אחת ולעניין אחד.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/02-new-conversation.png" alt="יצירת שיחה" />
+
+        <span class="marker" style="left:82.4%;top:2.9%;">1</span>
+        <span class="marker" style="left:89.5%;top:50.5%;">2</span>
+        <span class="marker" style="left:39.4%;top:32%;">3</span>
+        <span class="marker" style="left:40%;top:93.3%;">4</span>
+        <span class="marker" style="left:14.2%;top:93.3%;">5</span>
+        <span class="marker" style="left:5.8%;top:2.6%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>ה-+ שזה עתה לחצת</b> — <span>יוצר ובוחר את השיחה בתנועה אחת.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>השורה החדשה מופיעה</b> — <span>מוחתמת בתאריך ובשעה (שיחה חדשה 26-6-9 21:46) ומסומנת עכשיו — שיום אוטומטי ישנה את שמה אחרי החליפין הראשון.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>GHOST // SESSION — איך אפשר לעזור?</b> — <span>מצב ריק. Ghost מוכן; השרשור מתמלא כשאתה שואל.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>תיבת ההודעה, כבר בפוקוס</b> — <span>הקלד ולחץ Enter. Shift+Enter מוסיף שבירת שורה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>שליטות מצלמה וקול</b> — <span>מתג הלייב והמיקרופון יושבים לצד התיבה — חלקים IV ו-IX של החוברת.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>כלי הכותרת</b> — <span>פקודת מערכת, מצב התראה, זיכרון, סריקת סביבה ושפה — אייקון אחד לכל אחד, מכוסים עמוד אחר עמוד בנספח הזה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">כתוב הודעה למטה כדי להתחיל…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 04 — הצ'אט, דרוך ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item active"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הצ'אט, דרוך</div>
+      <div class="meta mono ltr">A-04 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה משתנה ברגע שאני מקליד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">שאלה מוקלדת וכל מה שסביב התיבה מדווח על מוכנות: חץ השליחה חי, ומכיוון שפקודה קולית מופעלת, פס האזנה מסביר איך לשלוח את ההודעה ללא ידיים.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/03-composer-typed.png" alt="הצ'אט, דרוך" />
+
+        <span class="marker" style="left:40%;top:92.8%;">1</span>
+        <span class="marker" style="left:19%;top:93.2%;">2</span>
+        <span class="marker" style="left:21%;top:93.2%;">3</span>
+        <span class="marker" style="left:47%;top:88.6%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>השאלה, בשפה פשוטה</b> — <span>“מה חשוב לכלול בתדריך משמרת ללילה שקט במתקן לוגיסטי?” — כוונה מבצעית, לא רשימות אובייקטים.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>חץ שליחה — דרוך</b> — <span>כהה ופעיל ברגע שהתיבה מכילה טקסט. Enter עושה אותו דבר.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>מיקרופון — מאזין</b> — <span>פקודה קולית פעילה: דיבור הופך לטקסט בתיבה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>פס הקול</b> — <span>מאזין… אמור “ביצוע” כדי לשלוח — אמור את מילת השליחה וההודעה נשלחת ללא ידיים.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">מה חשוב לכלול בתדריך משמרת לילה?…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 05 — קריאת התשובה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item active"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">קריאת התשובה</div>
+      <div class="meta mono ltr">A-05 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">התשובה הגיעה. למה כדאי לשים לב?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Ghost עונה בתדריך מובנה — והקונסולה עושה בשקט דבר אחד נוסף: היא קוראת את החליפין ומשנה את שם השיחה כך שיתאים לתוכנה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/04-thread-answer.png" alt="קריאת התשובה" />
+
+        <span class="marker" style="left:33%;top:11.2%;">1</span>
+        <span class="marker" style="left:45%;top:45%;">2</span>
+        <span class="marker" style="left:71.5%;top:3%;">3</span>
+        <span class="marker" style="left:91%;top:50.5%;">4</span>
+        <span class="marker" style="left:40%;top:97.6%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>השאלה שלך, מיושרת לימין</b> — <span>הודעות משתמש יושבות בבועות; רחף מעל אחת כדי לחשוף את חותמת הזמן המדויקת וכפתור העתקה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>תשובת Ghost, זורמת</b> — <span>צ'קליסט מבצעי מלא לתדריך משמרת הלילה — שים לב למבנה: קריאה פותחת, ואז נקודות מפורטות.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>הכותרת שינתה את עצמה</b> — <span>שיום אוטומטי שינה את שם השיחה ל-תדריך משמרת לילה מהתוכן.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>שורת הסרגל עקבה אחריה</b> — <span>אותו שם חדש ברשימה — שנה ידנית (עיפרון) והשיום האוטומטי ננעל החוצה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>שורת ההסתייגות</b> — <span>“Ghost עלול לטעות” — התזכורת הקבועה שאתה הוא האדם המאמת.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל שאלת המשך…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 06 — עורך פקודת המערכת ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item active"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">עורך פקודת המערכת</div>
+      <div class="meta mono ltr">A-06 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה אני כותב הוראות קבועות?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">אייקון המחוונים בכותרת פותח את פקודת המערכת — ההוראה הקבועה שהשיחה הזו מצייתת לה בכל תשובה. כאן נכתבת פקודת תצפית אמיתית לרציף פריקה צפוני.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/05-system-prompt.png" alt="עורך פקודת המערכת" />
+
+        <span class="marker" style="left:61.5%;top:32%;">1</span>
+        <span class="marker" style="left:50%;top:43%;">2</span>
+        <span class="marker" style="left:38.5%;top:61.8%;">3</span>
+        <span class="marker" style="left:38.7%;top:67.4%;">4</span>
+        <span class="marker" style="left:43%;top:67.4%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>העורך נפתח כחלון ממוקד</b> — <span>כל השאר מתעמעם — הוראות קבועות ראויות לתשומת לב מלאה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>עדיפויות ממוספרות, תנאים קונקרטיים</b> — <span>“(1) נתיב החירום חייב להישאר פנוי…” — מסודרות, נצפות, ופורמט תשובה קבוע בסוף.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>ספירת תווים</b> — <span>186 תווים — קצר מספיק כדי להישאר חד. פקודה באורך עמוד היא סימן שאתה צריך שתי שיחות.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>שמירה (Save)</b> — <span>ההוראה נכנסת לתוקף בהודעה הבאה ובכל אחת אחריה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>ביטול (Cancel)</b> — <span>מבטל את העריכה; הפקודה הקודמת נשארת בתוקף.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">ערוך את ההוראות הקבועות…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 07 — בורר המצלמות ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">בורר המצלמות</div>
+      <div class="meta mono ltr">A-07 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך אני כורך מצלמה אמיתית לשיחה הזו?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">הפעל את מתג הלייב (או לחץ הוסף מצלמה בכותרת) ו-GHOST // CAMERAS מציג כל מצלמה שהקונסולה הזו יכולה להגיע אליה — כאן, מצלמת MacBook ו-iPhone מותאם.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/08-camera-selector.png" alt="בורר המצלמות" />
+
+        <span class="marker" style="left:50%;top:48%;">1</span>
+        <span class="marker" style="left:50%;top:53.2%;">2</span>
+        <span class="marker" style="left:56.8%;top:60.3%;">3</span>
+        <span class="marker" style="left:42.8%;top:60.3%;">4</span>
+        <span class="marker" style="left:41.2%;top:39.8%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>שורת מצלמה — לחץ לבחירה</b> — <span>בחירה מרובה: שיחת שער לרוב משלבת את תצוגת ההתקרבות עם תצוגת המחסום.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>מכשיר שני</b> — <span>טלפונים, כרטיסי לכידה ומצלמות קבועות כולם מופיעים באותה דרך — בחר מה שמכסה את הסצנה.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שמור Setup</b> — <span>כורך את הבחירה לשיחה הזו לצמיתות ומתחיל לשדר. התראות ושידורים משתמשים בסט השמור הזה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הפעל לייב</b> — <span>משדר לסשן הזה בלבד — שום דבר לא נשמר. לשיחה שאתה שומר, תמיד שמור.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>סגור (×)</b> — <span>הדרך היחידה החוצה — הרקע במכוון לא סוגר החלטת מצלמה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בחר מצלמות…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 08 — הבמה החיה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הבמה החיה</div>
+      <div class="meta mono ltr">A-08 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">המצלמה דולקת. מהן כל שליטות הצ'אט האלה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">עם setup שמור הבמה החיה מוצגת מעל הצ'אט. תצוגת ברירת המחדל היא תצוגת המודיעין הרגועה בגווני אפור; Ghost מסמן בצלליות אנשים שהוא מזהה בסצנה ככלי התמצאות.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/09-live-stage.png" alt="הבמה החיה" />
+        <span class="maskbox" style="left:31%;top:41%;width:15%;height:21%;"><span>IDENTITY PROTECTED</span></span>
+        <span class="marker" style="left:39%;top:64%;">1</span>
+        <span class="marker" style="left:59.7%;top:44.1%;">2</span>
+        <span class="marker" style="left:59.7%;top:47.5%;">3</span>
+        <span class="marker" style="left:18.8%;top:84.2%;">4</span>
+        <span class="marker" style="left:57%;top:44.5%;">5</span>
+        <span class="marker" style="left:53.5%;top:8%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>הצ'אט החי — תצוגת מודיעין</b> — <span>גווני אפור בעיצוב לתצפיות ארוכות; הצללית הטורקיז היא Ghost המסמן אדם בסצנה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>הקלטה</b> — <span>לוכד את השידור לקליפ הניתן להורדה עם טיימר רץ — שכבת ראיות חומר הגלם שלך.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>הגברה — מצב צבע + זום/PTZ</b> — <span>מחליף לצבע מלא ופותח זום-גלגל (עד פי 8) והזזה-גרירה לקריאת פרטים.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>האזנת שמע</b> — <span>פותח את ערוץ המיקרופון של המצלמה אם יש לה. ברירת מחדל מושתק — פתח במכוון, סגור כשאומת.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>מחוון REC ותווית מצלמה</b> — <span>כל צ'אט מתויג בשם המכשיר שלו; הנקודה האדומה מאשרת הקלטה פעילה.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>צ'יפ מצלמה בכותרת</b> — <span>מצלמת ה-MacBook Air עם × לניתוק, ועוד הוסף מצלמה כדי להגדיל את ה-setup.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הגדל את התצוגה החיה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 09 — תשאול עם מצלמות חיות ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">תשאול עם מצלמות חיות</div>
+      <div class="meta mono ltr">A-09 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">שאלתי כשהלייב היה דלוק. מה Ghost באמת ראה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">כל שאלה חיה נושאת ראיות. Ghost דוגם שלושה פריימים במרווח של כ-0.8 שניות, ממסך פנים, ומצמיד את הקולאז' לתשובתו — התשובה ומה שראה, זה לצד זה, לתמיד.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/10-live-answer-frame.png" alt="תשאול עם מצלמות חיות" />
+
+        <span class="marker" style="left:29%;top:49.5%;">1</span>
+        <span class="marker" style="left:38%;top:63.5%;">2</span>
+        <span class="marker" style="left:23%;top:70%;">3</span>
+        <span class="marker" style="left:44%;top:76.5%;">4</span>
+        <span class="marker" style="left:40.5%;top:84.7%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>השאלה החיה</b> — <span>“תאר מה אתה רואה כרגע וציין כל דבר שדורש תשומת מפעיל” — זמן הווה, כי הלייב דלוק.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>קולאז' הפריימים שנדגמו</b> — <span>שלושה פריימים מרווחים חושפים תנועה, לא רק רגע קפוא. לחץ עליו לתצוגה בגודל מלא.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>סימן מים של חותמת זמן</b> — <span>2026-06-09 21:56 צרוב בתוך הפריים — ראיות נושאות את הזמן שלהן.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הקריאה של Ghost</b> — <span>“שקט… לא נדרשת תשומת מפעיל כרגע” — תשובה ברמת החלטה, לא מצאי.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>הצג שידור חי — במה מכווצת</b> — <span>הבמה החיה מתקפלת לפס דק כשאתה צריך מקום לשרשור; לחיצה אחת משחזרת אותה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תאר מה אתה רואה כרגע…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 10 — תיבת האור של הפריים ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">תיבת האור של הפריים</div>
+      <div class="meta mono ltr">A-10 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">אפשר לבחון את הפריימים המדויקים בגודל מלא?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">לחץ על כל פריים שנדגם והוא נפתח במסך מלא. זו תצוגת הראיות — מה ש-Ghost ניתח, בגודל בדיקה, עם שכבת הפרטיות מיושמת באופן גלוי.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/11-frame-lightbox.png" alt="תיבת האור של הפריים" />
+
+        <span class="marker" style="left:50%;top:48%;">1</span>
+        <span class="marker" style="left:6.5%;top:63.5%;">2</span>
+        <span class="marker" style="left:2%;top:3.2%;">3</span>
+        <span class="marker" style="left:50%;top:67%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>שלושה פריימים, גודל מלא</b> — <span>דגימה מרווחת: השווה את הפריימים כדי לקרוא תנועה — מה זז, מה נשאר.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>סימן מים של חותמת זמן</b> — <span>צרוב בפינה התחתונה של הקולאז'.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>סגור (×) — או לחץ Esc</b> — <span>מחזיר לשרשור בדיוק במקום שבו היית.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מיסוך פנים, גלוי</b> — <span>הכתם המטושטש בתחתית הוא שכבת הפרטיות — הזהות ממוסכת לפני הניתוח, בעיצוב.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Esc סוגר את התצוגה המקדימה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 11 — סריקת סביבה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">סריקת סביבה</div>
+      <div class="meta mono ltr">A-11 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה כפתור הסריקה מפיק?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">לחיצה אחת על אייקון עין-הסריקה ו-Ghost סוקר את כל הסצנה — לא תשובה לשאלה, אלא קריאה מובנית של האתר: מתאר, פעילות, ומה ראוי לתשומת לב המפעיל.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/12-site-intelligence.png" alt="סריקת סביבה" />
+
+        <span class="marker" style="left:8.4%;top:2.8%;">1</span>
+        <span class="marker" style="left:26.5%;top:19%;">2</span>
+        <span class="marker" style="left:38%;top:50%;">3</span>
+        <span class="marker" style="left:40%;top:86%;">4</span>
+        <span class="marker" style="left:40%;top:91.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>כפתור עין-הסריקה</b> — <span>חי בכותרת. מושבת עם רמז כשאין מצלמה מוגדרת — הסריקה צריכה עיניים.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>“Site Intelligence Report — סריקת סביבה”</b> — <span>הסריקה נוחתת בשרשור כחליפין מתויג — ניתן לציטוט וקבוע כמו כל תשובה.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>הפריים שנסקר</b> — <span>נדגם בזמן הסריקה, פנים ממוסכות, מוחתם בזמן — בסיס הראיות של הדוח.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הדוח עצמו</b> — <span>דוח מבוסס על ניתוח פריים בודד — מתאר, אחסון, תאורה, סיכונים. הרץ אחד על כל מצלמה חדשה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>קפוץ להודעה האחרונה</b> — <span>מופיע בכל גלילה למעלה — לחיצה אחת בחזרה לקצה החי של השרשור.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">סריקת סביבה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 12 — פאנל הזיכרון ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item active"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">פאנל הזיכרון</div>
+      <div class="meta mono ltr">A-12 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה אני רואה את מה שהשיחה הזו זוכרת?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">אייקון המוח פותח את פאנל הזיכרון — שלוש שכבות של מה שהשיחה הזו צברה, כל אחת ניתנת לבחינה ולגיזום.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/13-memory-panel.png" alt="פאנל הזיכרון" />
+
+        <span class="marker" style="left:15%;top:6.9%;">1</span>
+        <span class="marker" style="left:9%;top:6.9%;">2</span>
+        <span class="marker" style="left:3%;top:6.9%;">3</span>
+        <span class="marker" style="left:2.5%;top:11.9%;">4</span>
+        <span class="marker" style="left:7%;top:16%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>טרקינג (Tracking)</b> — <span>תיעוד פעילות רציף — אנשים, רכבים, ציוד הנעים בסצנה, ניתן לסינון לפי סוג וזמן.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>תצפיות (Observations)</b> — <span>זיכרון חזותי: ישויות ועובדות סצנה ש-Ghost הבחין בהן לאורך הדגימות.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>עובדות (Facts)</b> — <span>ידע קבוע המעצב תשובות עתידיות — לכל עובדה שליטת מחיקה. גזום אחרי כל שינוי באתר.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מתג הטראקינג</b> — <span>כבוי כברירת מחדל. הפעל בעמדות שבהן יומן פעילות מצדיק את עלותו.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>שליטות אצווה</b> — <span>0 / 8 — כיצד זיהויים מצטברים לפני שטיפה. שלח עכשיו מאלץ שטיפה מיידית.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">פתח את פאנל הזיכרון…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 13 — פאנל ההתראות ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item active"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">פאנל ההתראות</div>
+      <div class="meta mono ltr">A-13 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">פתח את המגן. מה אני מגדיר?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">אייקון המגן פותח את פאנל ההתראות — שבו שיחה לומדת לצפות בעצמה. הכל כאן מנוטרל; שני העמודים הבאים דורכים אותו.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/06-alert-panel.png" alt="פאנל ההתראות" />
+
+        <span class="marker red" style="left:3.7%;top:12%;">1</span>
+        <span class="marker red" style="left:12%;top:21.5%;">2</span>
+        <span class="marker red" style="left:13%;top:35.5%;">3</span>
+        <span class="marker red" style="left:2.5%;top:35.5%;">4</span>
+        <span class="marker red" style="left:12%;top:46.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>מצב התראה כבוי — מתג הדריכה</b> — <span>כבוי. השיחה עונה על שאלות אך אינה שומרת תצפית.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>אזהרת תנאי המצלמה</b> — <span>יש להגדיר מצלמה לשיחה — דריכה דורשת מצלמה שמורה. הקישור הפנימי פותח את הבורר.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>תיבת הכלל</b> — <span>כלל אמיתי באמצע הקלדה: “אדם מרים יד גבוה מעל הראש” — תנוחה נצפית, חריגה אחת, מילים פשוטות.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>הוסף (+)</b> — <span>לחץ, או הקש Enter, כדי להוסיף את הכלל לרשימת התצפית של השיחה.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>אין שורות התראה — רשימה ריקה</b> — <span>אין כללים עדיין. שיחה יכולה להחזיק כמה, כל אחד עם מתג נפרד.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תאר מצב, אובייקט או אירוע…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 14 — כלל, נוסף ופעיל ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item active"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">כלל, נוסף ופעיל</div>
+      <div class="meta mono ltr">A-14 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">הוספתי את הכלל. איך אני יודע שהוא נספר?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">הכלל כעת רשום. שים לב מה השתנה: מונה, מתג חי על הכלל עצמו, וקלט שנוקה ומוכן לכלל הבא.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/07-alert-rule-added.png" alt="כלל, נוסף ופעיל" />
+
+        <span class="marker red" style="left:11.5%;top:41.5%;">1</span>
+        <span class="marker red" style="left:20.5%;top:42.5%;">2</span>
+        <span class="marker red" style="left:5.5%;top:31.5%;">3</span>
+        <span class="marker red" style="left:12%;top:34%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>שורת הכלל</b> — <span>“אדם מרים יד גבוה מעל הראש” — בדיוק כפי שכתבת. ריחוף חושף שליטת מחיקה.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>המתג הירוק לכל כלל</b> — <span>פעיל. ירוק שמור למצבי חי/מחובר — הכלל הזה ייסרק ברגע שתדרוך.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>שורות התראה: 1</b> — <span>המונה מאשר כלל פעיל אחד בעמדה הזו.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>הקלט, נוקה</b> — <span>מוכן לכלל הבא — חריגה אחת לכל כלל, כמה כללים לעמדה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הוסף שורת התראה נוספת…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 15 — התצפית הדרוכה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item active"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">התצפית הדרוכה</div>
+      <div class="meta mono ltr">A-15 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מצב התראה דלוק. הקרא לי את כרטיס הסטטוס.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">דרוך. המתג ירוק, כרטיס הסטטוס חי, ושורת הסרגל של השיחה נושאת כעת תג מצב התראה אדום כך שכל מפעיל יכול לראות שהעמדה הזו צופה בעצמה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/14-alert-armed.png" alt="התצפית הדרוכה" />
+
+        <span class="marker red" style="left:3.7%;top:12.5%;">1</span>
+        <span class="marker red" style="left:9%;top:28.5%;">2</span>
+        <span class="marker red" style="left:9%;top:33.5%;">3</span>
+        <span class="marker red" style="left:9%;top:40.5%;">4</span>
+        <span class="marker red" style="left:9%;top:47.5%;">5</span>
+        <span class="marker red" style="left:92.5%;top:51.7%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>מצב התראה פעיל</b> — <span>התצפית חיה: Ghost סורק ברציפות את המצלמות השמורות מול הכללים שלך.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>סטטוס מערכת — כרטיס הדופק</b> — <span>קרא אותו בכל בדיקה; תצפית דרוכה שאתה לעולם לא מאמת היא סיפור שאתה מספר לעצמך.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>מצלמה: סורק…</b> — <span>פריימים זורמים ממצלמת ה-MacBook לתוך לולאת הסריקה.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>ערוץ התראות פעיל (ירוק)</b> — <span>ערוץ הדחיפה מחובר — התראה שנורית מגיעה לקונסולה הזו מיידית.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>סריקה אחרונה: כעת</b> — <span>שעון הרעננות. אם הוא מפסיק להתקדם: נטרל, תקן, דרוך מחדש.</span></div></div>
+            <div class="step"><span class="num red">6</span><div class="tx"><b>תג הסרגל האדום</b> — <span>מצב התראה על השורה — מצב דרוך גלוי מקצה החדר.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בדיקת חיבור…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 16 — פעולות שורת שיחה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item active"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">פעולות שורת שיחה</div>
+      <div class="meta mono ltr">A-16 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה מסתתר מאחורי שורת שיחה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">רחף מעל כל שורת שיחה וחותמת הזמן שלה מפנה מקום לסרגל פעולות — ארבע שליטות קטנות ששומרות אתר בן חמישים שיחות נתון לניווט.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/17-row-actions.png" alt="פעולות שורת שיחה" />
+
+        <span class="marker" style="left:84.5%;top:50%;">1</span>
+        <span class="marker" style="left:83%;top:50%;">2</span>
+        <span class="marker" style="left:81.5%;top:50%;">3</span>
+        <span class="marker" style="left:80%;top:50%;">4</span>
+        <span class="marker" style="left:86.2%;top:50%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>שייך לאזור (תיקייה)</b> — <span>פותח את תפריט התיוק — העמוד הבא — כדי למקם את השיחה הזו באזור או בקבוצה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>שיום אוטומטי (נצנוצים)</b> — <span>עקיפה של שיום אוטומטי לכל שיחה, מעל המתג הגלובלי בהגדרות.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שנה שם (עיפרון)</b> — <span>שינוי שם מהיר — או לחיצה כפולה על הכותרת. שם ידני נועל את השיום האוטומטי החוצה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מחק שיחה (פח אשפה)</b> — <span>מיידי וקבוע — אין אישור, אין ביטול. מכוון, לעולם לא מקרי.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>ידית גרירה</b> — <span>תפוס כדי לסדר מחדש, או שחרר את השורה לכל אזור או קבוצה בעץ.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">רחף מעל שורת שיחה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 17 — תפריט התיוק ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item active"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">תפריט התיוק</div>
+      <div class="meta mono ltr">A-17 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">לחצתי על התיקייה. לאן השיחה הזו יכולה ללכת?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">תפריט ה-בחר יעד מציג כל יעד: אזורים קיימים והקבוצות שלהם, מיקום ישיר באזור, מכלים חדשים לגמרי, או חזרה לרשימה החופשית.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/18-assign-menu.png" alt="תפריט התיוק" />
+
+        <span class="marker" style="left:91.5%;top:36.5%;">1</span>
+        <span class="marker" style="left:86%;top:36.8%;">2</span>
+        <span class="marker" style="left:88%;top:41.5%;">3</span>
+        <span class="marker" style="left:87.5%;top:46.5%;">4</span>
+        <span class="marker" style="left:86.5%;top:50.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>האזור — מפעל מגם ציפורי</b> — <span>רחף מעל אזור כדי לפרוס את אפשרויות המיקום שלו.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>ישירות באזור</b> — <span>מתייק את השיחה ישירות תחת האזור, מחוץ לכל קבוצה.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>הקבוצות — חנייה / מפעל גומי</b> — <span>לחיצה אחת מתייקת את השיחה לקבוצת המצלמות הזו.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>קבוצה חדשה</b> — <span>יוצר קבוצה ומתייק את השיחה לתוכה בתנועה אחת.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>ללא שיוך</b> — <span>מחזיר את השיחה לרשימה החופשית. Esc או לחיצה בחוץ סוגרות את התפריט.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בחר יעד…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 18 — שידור: התנאי המקדים ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item active"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">שידור: התנאי המקדים</div>
+      <div class="meta mono ltr">A-18 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">פתחתי צ'אט אזור והתיבה נעולה. למה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">שידור שולח שאלה אחת לכל מצלמה שמורה בהיקף. האזור הזה איתר אפס מצלמות — אז הקונסולה מסרבת להעמיד פנים, ואומרת לך בדיוק מה חסר.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/16-broadcast-empty.png" alt="שידור: התנאי המקדים" />
+
+        <span class="marker" style="left:73.5%;top:2.6%;">1</span>
+        <span class="marker" style="left:71.5%;top:4.2%;">2</span>
+        <span class="marker" style="left:39.5%;top:27%;">3</span>
+        <span class="marker" style="left:39.5%;top:93.2%;">4</span>
+        <span class="marker" style="left:76.6%;top:7.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>כותרת היקף — מפעל מגם ציפורי · אזור</b> — <span>אתה מדבר עכשיו עם אזור, לא עם מצלמה יחידה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>0 מצלמות בשידור</b> — <span>המאתר ספר מצלמות שמורות בכל שיחה באזור — ולא מצא אף אחת.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>ההסבר</b> — <span>צרף מצלמות לשיחות שבאזור — שידור רוכב על ה-setup השמור של כל שיחה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הצ'אט הנעול</b> — <span>מושבת עם הסיבה במציין המיקום. אין מצלמות, אין שידור — בעיצוב.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>סגור (×)</b> — <span>חזרה לצ'אט רגיל. תקן את ה-setups, ואז חזור — העמוד הבא.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">אין מצלמות מקושרות בשידור…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 19 — שידור, חי ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item active"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">שידור, חי</div>
+      <div class="meta mono ltr">A-19 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">עכשיו לאזור יש מצלמה. איך נראית סריקה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">שאלה אחת, כל מצלמה באזור, תשובה מתויגת אחת לכל מצלמה. זו סריקת סוף המשמרת מהחוברת, רצה באמת.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/19-broadcast-live.png" alt="שידור, חי" />
+
+        <span class="marker" style="left:71%;top:2.8%;">1</span>
+        <span class="marker" style="left:29%;top:10.5%;">2</span>
+        <span class="marker" style="left:39%;top:23.5%;">3</span>
+        <span class="marker" style="left:51.5%;top:17.5%;">4</span>
+        <span class="marker" style="left:33%;top:37.5%;">5</span>
+        <span class="marker" style="left:91.5%;top:49%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>1 מצלמות בשידור</b> — <span>ההיקף מאתר כעת את המצלמה השמורה של השיחה שתויקה לאזור הזה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>שאלת הסריקה</b> — <span>“סריקת סוף משמרת: דווח מה קורה בשטח שלך…” — נשאלת פעם אחת, נמסרת לכל מצלמה.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>תשובה לכל מצלמה</b> — <span>מתויגת MacBook Air (0000:0001) — כל מצלמה עונה בשמה עם הפריימים שלה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>קולאז' הראיות</b> — <span>אותה דגימת שלושה פריימים כמו בשאלה חיה רגילה, לכל מצלמה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>הפסיקה</b> — <span>שקט… לא נדרשת תשומת מפעיל — קרא שידורים לפי חריג והעמק לתוך מה שמסומן.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>השיחה המתויקת</b> — <span>תדריך משמרת ללילה שקט יושבת כעת בתוך האזור — אותו תיוק הוא מה שהשידור איתר.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שלח הודעה אחת לכל המצלמות…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 20 — לוח האירועים ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item active"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">לוח האירועים</div>
+      <div class="meta mono ltr">A-20 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">החלף ל-ניהול אירועים. מה אני ממיין?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">לשונית האירועים הופכת רעש התראות לעבודת תיק: התראות אמיתיות שנורו — אדם מרים יד למעלה — ממוזגות לאירועים, מדורגות, וזורמות על פני העמודות לעבר סגירה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/20-incident-board.png" alt="לוח האירועים" />
+
+        <span class="marker red" style="left:68.5%;top:22%;">1</span>
+        <span class="marker red" style="left:47.5%;top:22%;">2</span>
+        <span class="marker red" style="left:68.5%;top:40%;">3</span>
+        <span class="marker red" style="left:35%;top:14%;">4</span>
+        <span class="marker red" style="left:22.5%;top:2.6%;">5</span>
+        <span class="marker red" style="left:79.8%;top:7.3%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>אירועים חדשים — עמודת המיון</b> — <span>שלושה תיקים טריים, כל אחד עם פריים ההתראה, דירוג חומרה (נמוך) והקריאה החד-שורתית של ה-AI.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>אירועים בטיפול / בבירור</b> — <span>תיקים שמפעיל בעליהם. תיק אחד, בעלים אחד — בעלות משותפת היא איך תיקים נתקעים.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>כרטיס האירוע</b> — <span>זמן, מצלמה, פריים, הערכת AI, ספירת אירועים — מספיק כדי למיין בלי לפתוח.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>רצועת KPI</b> — <span>ספירות פתוחים וסטטיסטיקת תגובה — תמונת הביצועים של המשמרת במבט אחד.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>חיפוש ומסננים</b> — <span>חיפוש אירועים, מסנני חומרה ואחראי — חתוך את הלוח למה שבאחריותך.</span></div></div>
+            <div class="step"><span class="num red">6</span><div class="tx"><b>תג הלשונית (3)</b> — <span>תיקים הממתינים למיון. קונסולה מקצועית מריצה את המספר הזה לאפס בכל משמרת.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">חיפוש אירועים…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 21 — הגדרות: חשבון ומשתמשים ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item active"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הגדרות: חשבון ומשתמשים</div>
+      <div class="meta mono ltr">A-21 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">בשם מי הקונסולה הזו עובדת?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">הגדרות נפתחות מגלגל השיניים ברצועת תחתית הסרגל. המקטע הראשון עונה על השאלה התפעולית החשובה ביותר בקונסולה משותפת: למי העבודה הזו משויכת?</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/21-settings-account.png" alt="הגדרות: חשבון ומשתמשים" />
+
+        <span class="marker" style="left:75.5%;top:17.5%;">1</span>
+        <span class="marker" style="left:43%;top:31.5%;">2</span>
+        <span class="marker" style="left:52.5%;top:47.5%;">3</span>
+        <span class="marker" style="left:33.5%;top:47.5%;">4</span>
+        <span class="marker" style="left:27.3%;top:53.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>ניווט המקטעים</b> — <span>חשבון ומשתמשים, כניסה מהירה, פקודה קולית, כוונון תגובות, מרכז הלמידה — חמישה מקטעים, מכוסים לפי הסדר.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>רשימת המשתמשים</b> — <span>tester עם נקודה ירוקה פעילה — אישורים, הערות וסגירות חתומים על ידי הזהות הזו.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>כינוי — שדה כינוי</b> — <span>מפעיל חדש מתחיל עם שם…</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מפתח Ghost API</b> — <span>…ומפתח. מתג העין חושף אותו רק בזמן ההדבקה.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>צור משתמש</b> — <span>יוצר את המפעיל. החלפת זהויות מתבצעת ברצועת תחתית הסרגל בכל חילוף.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">נהל משתמשים…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 22 — הגדרות: לינק כניסה מהירה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item active"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הגדרות: לינק כניסה מהירה</div>
+      <div class="meta mono ltr">A-22 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך אני מוסר גישה לחבר צוות בלי לשתף מפתחות?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">כניסה מהירה מנפיק לינק קסם חד-פעמי — הדרך הנכונה למסור את הקונסולה למפעיל מחליף, למפקח, או למכשיר השני שלך.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/22-settings-quicklink.png" alt="הגדרות: לינק כניסה מהירה" />
+
+        <span class="marker" style="left:47.5%;top:29.5%;">1</span>
+        <span class="marker" style="left:31.5%;top:29.5%;">2</span>
+        <span class="marker" style="left:25.5%;top:29.5%;">3</span>
+        <span class="marker" style="left:27%;top:33.5%;">4</span>
+        <span class="marker" style="left:27.5%;top:24.7%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>הלינק שהונפק</b> — <span>https://…?magic=… — חד-פעמי, כבר על הלוח שלך ברגע שנוצר.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>העתק לינק</b> — <span>מעתיק שוב. מסור רק בערוץ המאושר של האתר — לינק שלא נשלח הוא אישור כניסה חתום ריק.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>פתח בלשונית חדשה</b> — <span>דלת בדיקה: פתיחת הלינק נוחתת מחובר, ללא הקלדה.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>צור לינק חדש</b> — <span>מייצר מחדש — ומבטל את הישן. אם לינק עלול לדלוף: צור מחדש קודם, חקור אחר כך.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>פג תוקף בעוד 15 דק׳</b> — <span>הספירה לאחור. לינקים פגים מעצמם; לעולם אל תאחסן אותם.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">צור לינק כניסה מהירה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 23 — הגדרות: פקודה קולית ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item active"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הגדרות: פקודה קולית</div>
+      <div class="meta mono ltr">A-23 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">הגדר לי הפעלה ללא ידיים.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">פקודת שליחה קולית: כשהקול דלוק, דיבור הופך לטקסט בצ'אט, ואמירת מילת השליחה שולחת את ההודעה — עיניים על הסצנה, ידיים על הקשר.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/23-settings-voice.png" alt="הגדרות: פקודה קולית" />
+
+        <span class="marker" style="left:26%;top:27.5%;">1</span>
+        <span class="marker" style="left:45.5%;top:32.8%;">2</span>
+        <span class="marker" style="left:26.5%;top:32.8%;">3</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>הפעלת פקודה קולית — מתג ראשי</b> — <span>דלוק: הצ'אט מקבל מיקרופון. כבוי: אין האזנה, לעולם — חלק מהחדרים דורשים את העמדה הזו.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>מילת השליחה — ביצוע</b> — <span>עד שתי מילים, עברית או אנגלית. בחר משהו שלעולם לא תאמר באמצע משפט.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שמירה</b> — <span>שומר את המילה. בחדרים פתוחים, תאם מילים עם הקונסולות הסמוכות.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">אמור את מילת השליחה…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 24 — הגדרות: כיוונון תגובות ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item active"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">הגדרות: כיוונון תגובות</div>
+      <div class="meta mono ltr">A-24 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה החוגות של מהירות מול עומק?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">כיוונון תגובות מחזיק את החוגות. חוגות לכל שיחה (דיוק, אורך, פירוט תמונה) דורשות שיחה פעילה; השתיים המוצגות כאן הן לכל הקונסולה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/24-settings-tuning.png" alt="הגדרות: כיוונון תגובות" />
+
+        <span class="marker" style="left:49%;top:26.5%;">1</span>
+        <span class="marker" style="left:30%;top:37%;">2</span>
+        <span class="marker" style="left:30%;top:44%;">3</span>
+        <span class="marker" style="left:59.5%;top:66.5%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>מהירות מול דיוק — לכל שיחה</b> — <span>פתח שיחה קודם; ואז המקטע הזה מוסיף את חוגות הדיוק (1–4), האורך ופירוט התמונה לעמדה ההיא.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>איכות הצילום: חד / מאוזן / מהיר</b> — <span>כמה בחדות דפדפן זה דוגם פריימים לפני השליחה. חד (sharp) נבחר — רד למהיר בחומרה חלשה.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>כרטיס ההסבר</b> — <span>מה זה אומר בפועל — כל חוגה מסבירה את ההיפוך שלה במילים פשוטות. קרא לפני שתסובב.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>שיום אוטומטי: מופעל / כבוי</b> — <span>המתג הגלובלי לשיום אוטומטי — כפתור הנצנוצים בכל שורה עוקף אותו לכל שיחה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">כוון את התגובות…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 25 — מרכז הלמידה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item active"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מרכז הלמידה</div>
+      <div class="meta mono ltr">A-25 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה אני מנגן מחדש את הפרקים המודרכים?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">מרכז הלמידה מחזיק אחד-עשר פרקים מודרכים המאירים את הקונסולה האמיתית, שליטה אחר שליטה. כשתכונה לא נוצלה במשך חודש, נגן מחדש את הפרק שלה לפני המשמרת שתזדקק לה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/26-onboarding-hub.png" alt="מרכז הלמידה" />
+
+        <span class="marker" style="left:50%;top:17%;">1</span>
+        <span class="marker" style="left:50%;top:23%;">2</span>
+        <span class="marker" style="left:50%;top:64%;">3</span>
+        <span class="marker" style="left:47%;top:88.8%;">4</span>
+        <span class="marker" style="left:59%;top:88.8%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>התקדמות — 0/11 פרקים הושלמו</b> — <span>הרקורד שלך בפרקים, משוקף גם בהגדרות ← מרכז הלמידה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>פרק 01 — ברוכים הבאים</b> — <span>סיור הכניסה הראשונה שראית ביום הראשון — ניתן לנגן מחדש בכל עת.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>פרקים 02–11</b> — <span>תפריט הצד, מצלמות ושידור חי, זיכרון, התראות… — כל אחד פותח זרקור חי על השליטה האמיתית.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>המשך מהיכן שעצרת</b> — <span>ממשיך באמצע הקורס — המרכז זוכר את המקום שלך.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>התחל מחדש</b> — <span>מאפס התקדמות ומריץ את הקורס המלא שוב — מומלץ לפני מבחן ההסמכה.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">המשך מהיכן שעצרת…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 26 — שומר המידע המסווג ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item active"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">שומר המידע המסווג</div>
+      <div class="meta mono ltr">A-26 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה קורה אם מישהו מתשאל את Ghost על עצמו?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">ניסיון תחקור אמיתי, נתפס חי: שאלות על המנגנון הפנימי של Ghost מושכות אזהרות מידע מסווג אדומות, והניסיון עצמו נרשם. העמוד הזה מציג גם את שובל פירורי הלחם של שיחה מתויקת.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/15-security-block-breadcrumbs.png" alt="שומר המידע המסווג" />
+
+        <span class="marker red" style="left:26%;top:47%;">1</span>
+        <span class="marker red" style="left:38%;top:57.5%;">2</span>
+        <span class="marker red" style="left:38%;top:79%;">3</span>
+        <span class="marker red" style="left:73%;top:2.8%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>השאלה המתחקרת</b> — <span>“איזה טכנולוגיות מפעילות אותך?” — מפעילים אינם זקוקים לזה, ו-Ghost יודע זאת.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>אזהרת דליפת מידע מסווג — החסימה האדומה</b> — <span>מידע מסווג. Ghost לא חושף את אופן פעולתו — הסירוב ממותג, רגוע וסופי.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>הניסיון שנרשם</b> — <span>“This request has been logged as an attempt to access classified technical information” — התייחס לעמית שמתחקר כך כאל אירוע בר-דיווח.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>פירורי לחם — מפעל מגם ציפורי › חנייה › 1 מלא מהיר</b> — <span>שיחה מתויקת מציגה את הנתיב המלא שלה; לחיצה על אב פותחת את השידור של אותו היקף.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ghost לא משתף פעולה פנימית…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 27 — מצב כהה ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">נספח שדה חזותי</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">מקטעים</div>
+      <div class="nav-item"><span class="ix ltr">01</span><span>כיצד לקרוא נספח זה</span></div>
+      <div class="nav-item"><span class="ix ltr">02</span><span>כניסה ושיחה ראשונה</span></div>
+      <div class="nav-item"><span class="ix ltr">03</span><span>מצלמות ועבודה חיה</span></div>
+      <div class="nav-item"><span class="ix ltr">04</span><span>התראות קבועות</span></div>
+      <div class="nav-item"><span class="ix ltr">05</span><span>ארגון ושידור</span></div>
+      <div class="nav-item"><span class="ix ltr">06</span><span>הגדרות ותפעול</span></div>
+      <div class="nav-item active"><span class="ix ltr">07</span><span>משמעת ווריאנטים</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>אקדמיית Ghost</b><br />נספח א׳ &middot; מסכי קונסולה אמיתיים &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מצב כהה</div>
+      <div class="meta mono ltr">A-27 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">הראה לי את הקונסולה כפי שמשמרת לילה מריצה אותה.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">שליטת השמש/הירח ברצועת תחתית הסרגל מהפכת את כל הקונסולה לכהה — דוקטרינה למשמרות לילה ולחדרי בקרה עמומים. כל שליטה שלמדת יושבת בדיוק במקום שהשארת אותה.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/27-dark-mode.png" alt="מצב כהה" />
+
+        <span class="marker" style="left:84.8%;top:96.8%;">1</span>
+        <span class="marker" style="left:89.5%;top:2.6%;">2</span>
+        <span class="marker" style="left:40%;top:50%;">3</span>
+        <span class="marker" style="left:40%;top:94%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>מתג ערכת הנושא</b> — <span>לחיצה אחת בתחתית; הבחירה נשמרת בקונסולה הזו בין סשנים.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>אותה מסגרת, דיו הפוך</b> — <span>שעון, לשוניות ועץ — מתאר זהה, פלטה כהה מונוכרומית, אדום עדיין שמור להתראות ולשניות.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>השרשור, קריא בחושך</b> — <span>הניגודיות מכוונת לתצפיות לילה ארוכות — טקסט גוף נשאר רך, פריימי ראיות נשארים בהירים.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הצ'אט, ללא שינוי</b> — <span>זיכרון השריר שורד את ערכת הנושא: כל שליטה מהנספח הזה באותו מקום.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">החלף ערכת נושא…</span><span class="send"></span></div>
+      <div class="disclaimer">אקדמיית Ghost &middot; תוכנית הכשרת מפעילים &middot; נספח שדה חזותי &middot; חסוי</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

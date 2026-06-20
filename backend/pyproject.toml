@@ -1,0 +1,18 @@
+[tool.ruff]
+# Match the runtime Python version (Dockerfile uses 3.11).
+target-version = "py311"
+line-length = 100
+extend-exclude = ["venv", "data", "tests/__pycache__"]
+
+[tool.ruff.lint]
+# Start conservative: real correctness problems only, not style churn.
+#   E9  -> syntax errors
+#   F   -> pyflakes (undefined names, unused imports, f-string issues)
+#   B   -> common bug patterns (flake8-bugbear)
+select = ["E9", "F", "B"]
+# Allow the intentional broad-except patterns that log-and-continue.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Smoke tests deliberately import after mutating sys.path / env.
+"tests/*" = ["E402", "F401"]

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — Defense &amp; National Security Brief</title>
+<style>
+  /* =========================================================
+     Ghost — Defense & National Security Brief
+     Black & White · ChatGPT-UI design system
+     Tokens follow chatgpt-ui-clone (dark), accent neutralised
+     ========================================================= */
+  :root {
+    --bg-primary: #212121;
+    --bg-sidebar: #171717;
+    --bg-surface: #2f2f2f;
+    --bg-surface-hover: #3a3a3a;
+    --bg-code: #1e1e1e;
+    --text-primary: #ececec;
+    --text-secondary: #b4b4b4;
+    --text-muted: #767676;
+    --border-subtle: #3a3a3a;
+    /* monochrome accent (no color) */
+    --accent: #ececec;
+    --accent-ink: #171717;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #0d0d0d;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  /* ---------- A4 page = one ChatGPT screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 64mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 14px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .brand .name .sub {
+    display: block; font-size: 9.5px; font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.02em; margin-top: 1px;
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 40px; padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .newchat .plus {
+    width: 16px; height: 16px; position: relative; opacity: 0.85;
+  }
+  .newchat .plus::before, .newchat .plus::after {
+    content: ""; position: absolute; background: var(--text-secondary);
+  }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    padding: 14px 10px 4px; letter-spacing: 0.02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    height: 38px; padding: 0 11px;
+    border-radius: 11px;
+    font-size: 12.5px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 14px; }
+  .nav-item.active {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 12px 10px 2px;
+    font-size: 10.5px; color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  /* ---------- Main column ---------- */
+  .main {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+  }
+  .topbar {
+    height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread {
+    flex: 1;
+    overflow: hidden;
+    padding: 26px 28px 8px;
+    display: flex; flex-direction: column;
+    gap: 22px;
+  }
+  .wrap { width: 100%; max-width: 150mm; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+  /* user message bubble (right aligned) */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    max-width: 78%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px;
+    padding: 11px 16px;
+    font-size: 14px; line-height: 1.55;
+  }
+
+  /* assistant message (full width, no bg) */
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    overflow: hidden; margin-top: 2px;
+  }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body p {
+    font-size: 14px; line-height: 1.75; color: var(--text-primary);
+  }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body .lead { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+
+  /* principle / feature list */
+  .feat { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 0; }
+  .feat li {
+    padding: 13px 0; border-bottom: 1px solid var(--border-subtle);
+    display: flex; gap: 13px; align-items: flex-start;
+  }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-primary); margin-top: 7px; flex-shrink: 0;
+  }
+  .feat .ft-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .feat .ft-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-left: 8px; }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 2px; }
+
+  /* pipeline diagram rendered as code-style block */
+  .codeblock {
+    margin-top: 14px;
+    background: var(--bg-code);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .codeblock .cb-head {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #2a2a2a; padding: 8px 14px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .codeblock .cb-head .copy { font-size: 11px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 18px 16px; }
+
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+  .node {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    display: flex; flex-direction: column; gap: 4px; justify-content: center;
+  }
+  .node .n-t { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.25; }
+  .node .n-s { font-size: 9.5px; color: var(--text-muted); }
+  .arrow {
+    align-self: center; width: 26px; text-align: center;
+    color: var(--text-muted); font-size: 15px; flex-shrink: 0;
+  }
+
+  /* chips grid */
+  .chips { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .chip {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 13px 14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .chip .c-t { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .chip .c-d { font-size: 11px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+
+  /* stat strip */
+  .stats { margin-top: 16px; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .stat { border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 10px; text-align: center; }
+  .stat .s-b { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .stat .s-l { font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+  .closer {
+    margin-top: 20px; padding: 22px;
+    border: 1px solid var(--border-subtle); border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .closer .big { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* ---------- Composer (decorative, sticky bottom) ---------- */
+  .composer-wrap { padding: 8px 28px 18px; }
+  .composer {
+    max-width: 150mm; margin: 0 auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 11px 12px 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); }
+  .composer .send {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    position: relative;
+  }
+  .composer .send::after {
+    content: ""; position: absolute; left: 50%; top: 52%;
+    width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink);
+    transform: translate(-50%,-50%) rotate(-45deg);
+  }
+  .disclaimer { max-width: 150mm; margin: 8px auto 0; text-align: center; font-size: 10.5px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — Executive Brief ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item active"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Executive Brief</div>
+      <div class="meta mono">01 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What is Ghost, in one line?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">Confidential · Defense &amp; National Security Brief</div>
+            <p class="lead">Your cameras already see everything. <span class="dim">Now you can question them.</span></p>
+            <p>Ghost is the first chat interface for your cameras. It connects to the infrastructure you already operate and turns every feed — live and recorded — into a memory you question in plain language. Operators stop scrubbing footage and start asking.</p>
+            <p>Built for sovereign, air-gapped, and high-assurance environments.</p>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Agentless<span class="ft-tag">no software on cameras</span></div><div class="ft-desc">Ingests existing streams over RTSP, isolated HDMI capture, or local integrations.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Air-gap ready<span class="ft-tag">disconnected sites</span></div><div class="ft-desc">Runs fully disconnected for high-assurance, sovereign facilities.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Zero-trust<span class="ft-tag">no implicit trust</span></div><div class="ft-desc">Every request authenticated; no implicit trust between components.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Full audit trail<span class="ft-tag">chain of custody</span></div><div class="ft-desc">Role-based access with configurable, exportable audit logs.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask Ghost what it can do for your control room…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — The Gap ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Gap // Footage Is Not Intelligence</div>
+      <div class="meta mono">02 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Why isn't the footage we already record enough?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p class="lead">The footage already exists. <span class="dim">The understanding doesn't.</span></p>
+            <p>Control rooms are saturated with feeds no one can watch in full. Critical moments are buried in hours of recording, scattered across dozens of cameras, recoverable only after the fact.</p>
+            <p>Ghost closes that gap — every camera becomes a conversation, every group of cameras becomes an investigation channel, and every recorded moment becomes textual memory you can search by simply asking.</p>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Plain-language investigation</div><div class="ft-desc">Reconstruct an event across multiple cameras by asking, not searching.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Shift &amp; sector summaries</div><div class="ft-desc">Generate handover and situation summaries for any timeframe or group of cameras.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Cross-camera channels</div><div class="ft-desc">Group cameras like conversations and investigate a whole sector as one thread.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Reconstruct what happened at the east gate last night…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — Operational Layers ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Doctrine // Three Operational Layers</div>
+      <div class="meta mono">03 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How does Ghost actually work for an operator?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Ghost operates across three layers — talk to the past, the present, and a future you define yourself.</p>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">History you can talk to<span class="ft-tag">Memory</span></div><div class="ft-desc">Every sequence is continuously converted into rich, searchable text. Ask what happened at a location and timeframe and get an answer in seconds — no scrubbing, no jumping between cameras.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Ask what is happening now<span class="ft-tag">Live</span></div><div class="ft-desc">Query any camera or sector in real time and receive a plain-language description of the current situation, on demand.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Checks you define in natural language<span class="ft-tag">Watch</span></div><div class="ft-desc">Describe a recurring check in your own words. Ghost runs exactly what you defined and flags deviations — it executes your intent, it does not decide on its own.</div></div></li>
+            </ul>
+
+            <div class="closer">
+              <div class="big">“Watch the loading bay and alert me the moment the emergency exit is blocked.”</div>
+              <div class="small">A natural-language check, running continuously — you get only the deviations.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Describe a check you want Ghost to watch for…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — Data Flow ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Data Flow // Agentless By Design</div>
+      <div class="meta mono">04 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How does Ghost connect to our cameras?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Four stages. One direction. No agents on your cameras. Ghost ingests streams from your existing infrastructure over RTSP, isolated HDMI capture, or local integrations. Frames are interpreted into structured narratives and context, then surfaced to operators as plain-language conversations — without exposing raw footage beyond your boundary.</p>
+
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">capture-pipeline</span><span class="copy mono">one direction</span></div>
+              <div class="cb-body">
+                <div class="pipe">
+                  <div class="node"><span class="n-t">Existing cameras</span><span class="n-s">your deployed fleet</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">RTSP / HDMI</span><span class="n-s">agentless capture</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Ghost interpretation</span><span class="n-s">vision + language</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Operator conversation</span><span class="n-s">chat with every camera</span></div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">No agents required</div><div class="ft-desc">Nothing is installed on cameras or NVR devices.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Continuous textual logging</div><div class="ft-desc">A persistent, queryable record of the filmed environment, retained as structured memory.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask how Ghost ingests an isolated HDMI feed…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 5 — Deployment & Sovereignty ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Deployment // Sovereignty &amp; Isolation</div>
+      <div class="meta mono">05 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Which deployment configurations do you support?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Ghost supports multiple deployment configurations to comply with the assurance, sovereignty, and operational requirements of defense and national-security organizations — from fully air-gapped sites to national control-center integrations.</p>
+
+            <div class="chips">
+              <div class="chip"><div class="c-t">On-prem / Local RTSP</div><div class="c-d">Processing within isolated networks you control.</div></div>
+              <div class="chip"><div class="c-t">Air-gapped</div><div class="c-d">Fully disconnected, high-assurance sites.</div></div>
+              <div class="chip"><div class="c-t">HDMI capture</div><div class="c-d">Isolated capture with no network coupling.</div></div>
+              <div class="chip"><div class="c-t">Hybrid</div><div class="c-d">Hybrid intelligence environments.</div></div>
+              <div class="chip" style="grid-column: 1 / -1;"><div class="c-t">National / enterprise control center</div><div class="c-d">Integration with existing operations centers.</div></div>
+            </div>
+
+            <div class="kicker mono" style="margin-top:22px;">Built For // Operational Domains</div>
+            <div class="chips" style="margin-top:8px;">
+              <div class="chip"><div class="c-t">Critical infrastructure</div></div>
+              <div class="chip"><div class="c-t">Perimeter &amp; site security</div></div>
+              <div class="chip"><div class="c-t">National &amp; enterprise control rooms</div></div>
+              <div class="chip"><div class="c-t">Ports, borders &amp; aviation</div></div>
+              <div class="chip"><div class="c-t">Energy &amp; utilities</div></div>
+              <div class="chip"><div class="c-t">Government &amp; defense facilities</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about an air-gapped deployment for your site…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 6 — Security & Compliance ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Defense &amp; National Security</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New investigation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Brief</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>The Gap</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Operational Layers</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Data Flow</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Sovereignty</span></div>
+    <div class="nav-item active"><span class="ix">06</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Defense &amp; National Security Brief · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Compliance // Security Framework</div>
+      <div class="meta mono">06 / 06</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How do you handle security, retention, and assurance?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Ghost is built around a zero-trust security model. Raw video exposure is minimized; structured memory layers persist instead, and all communication moves over encrypted channels end to end.</p>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Zero-trust architecture</div><div class="ft-desc">Every request authenticated; no implicit trust between components.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Access control &amp; audit logs</div><div class="ft-desc">Role-based access with configurable, exportable audit trails and chain of custody.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Encrypted channels</div><div class="ft-desc">All communication moves over encrypted channels, end to end.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Data minimization</div><div class="ft-desc">Raw video exposure is minimized; structured memory layers persist instead.</div></div></li>
+            </ul>
+
+            <div class="stats">
+              <div class="stat"><div class="s-b">Zero-trust</div><div class="s-l">No implicit trust</div></div>
+              <div class="stat"><div class="s-b">Encrypted</div><div class="s-l">End-to-end channels</div></div>
+              <div class="stat"><div class="s-b">Agentless</div><div class="s-l">Nothing on cameras</div></div>
+              <div class="stat"><div class="s-b">Auditable</div><div class="s-l">Exportable trails</div></div>
+            </div>
+
+            <div class="closer">
+              <div class="big">Request operational access.</div>
+              <div class="small">Provisioned for vetted defense and national-security organizations — confidential, shared under NDA terms.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Request a secured briefing for your organization…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Sovereign Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

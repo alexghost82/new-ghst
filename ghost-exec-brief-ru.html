@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — Скачок · Краткая справка для руководителей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* =========================================================
+     Ghost — The Leap · Executive Brief (Russian)
+     Black & White · ChatGPT-UI design line · LIGHT · LTR
+     Modern Cyrillic (Inter) + tactical mono (IBM Plex Mono)
+     ========================================================= */
+  :root {
+    --bg-primary: #ffffff;
+    --bg-sidebar: #f9f9f9;
+    --bg-surface: #f4f4f4;
+    --bg-surface-2: #ececec;
+    --bg-code: #f6f6f6;
+    --text-primary: #0d0d0d;
+    --text-secondary: #6e6e6e;
+    --text-muted: #9b9b9b;
+    --border-subtle: #e5e5e5;
+    --border-strong: #d4d4d4;
+    --accent: #0d0d0d;
+    --accent-ink: #ffffff;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: A4 portrait; margin: 0; }
+  html, body {
+    background: #e3e3e3; color: var(--text-primary); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  .page { width: 210mm; height: 297mm; margin: 0 auto; background: var(--bg-primary); display: flex; overflow: hidden; position: relative; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  .sidebar { width: 62mm; flex-shrink: 0; background: var(--bg-sidebar); border-inline-end: 1px solid var(--border-subtle); display: flex; flex-direction: column; padding: 18px 13px; gap: 6px; }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 4px 6px 16px; }
+  .brand img { width: 30px; height: 30px; border-radius: 9px; display: block; }
+  .brand .name { font-size: 15.5px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.1; }
+  .brand .name .sub { display: block; font-size: 8.5px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.2em; margin-top: 3px; text-transform: uppercase; font-family: var(--mono); }
+
+  .newchat { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 13px; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+  .newchat .plus { width: 15px; height: 15px; position: relative; opacity: 0.7; }
+  .newchat .plus::before, .newchat .plus::after { content: ""; position: absolute; background: var(--text-secondary); }
+  .newchat .plus::before { left: 6.5px; top: 0; width: 2px; height: 15px; border-radius: 2px; }
+  .newchat .plus::after { top: 6.5px; left: 0; height: 2px; width: 15px; border-radius: 2px; }
+
+  .nav-label { font-size: 8.5px; font-weight: 600; color: var(--text-muted); padding: 16px 10px 6px; letter-spacing: 0.2em; font-family: var(--mono); text-transform: uppercase; }
+  .nav-item { display: flex; align-items: center; gap: 9px; min-height: 34px; padding: 5px 11px; border-radius: 10px; font-size: 12px; color: var(--text-secondary); line-height: 1.25; font-weight: 500; }
+  .nav-item .ix { font-size: 9.5px; color: var(--text-muted); width: 15px; flex-shrink: 0; font-family: var(--mono); }
+  .nav-item.active { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot { border-top: 1px solid var(--border-subtle); padding: 13px 10px 2px; font-size: 10.5px; color: var(--text-muted); line-height: 1.6; }
+  .sidebar .foot .ml { font-family: var(--mono); letter-spacing: 0.16em; text-transform: uppercase; display: block; font-size: 8.5px; color: var(--text-secondary); margin-bottom: 3px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 26px; border-bottom: 1px solid var(--border-subtle); }
+  .topbar .title { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread { flex: 1; overflow: hidden; padding: 28px 30px 8px; display: flex; flex-direction: column; gap: 22px; }
+  .wrap { width: 100%; max-width: 164mm; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble { max-width: 84%; background: var(--bg-surface); color: var(--text-primary); border-radius: 20px; border-end-end-radius: 6px; padding: 11px 17px; font-size: 14px; line-height: 1.6; font-weight: 500; }
+
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av { width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; overflow: hidden; margin-top: 2px; border: 1px solid var(--border-subtle); }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body .sender { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .msg-ai .body p { font-size: 14px; line-height: 1.85; color: var(--text-primary); font-weight: 400; }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body b { font-weight: 700; }
+  .msg-ai .body .lead { font-size: 25px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.28; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 12px; }
+
+  .feat { list-style: none; margin-top: 12px; display: flex; flex-direction: column; gap: 0; }
+  .feat li { padding: 14px 0; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 13px; align-items: flex-start; }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-top: 8px; flex-shrink: 0; }
+  .feat .ft-title { font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; letter-spacing: -0.01em; }
+  .feat .ft-en { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 5px; }
+  .feat .ft-meta { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); line-height: 1.55; }
+  .feat .ft-meta .mk { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); margin-inline-end: 8px; }
+
+  .codeblock { margin-top: 16px; background: var(--bg-code); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; }
+  .codeblock .cb-head { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 9px 14px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border-subtle); }
+  .codeblock .cb-head .copy { font-size: 11px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 16px; }
+
+  .cmp { display: flex; flex-direction: column; gap: 11px; }
+  .cmp-row { display: flex; align-items: stretch; gap: 0; }
+  .cmp-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-muted); align-self: center; width: 56px; flex-shrink: 0; }
+  .node { flex: 1; background: var(--bg-primary); border: 1px solid var(--border-strong); border-radius: 11px; padding: 11px 12px; text-align: center; display: flex; flex-direction: column; gap: 3px; justify-content: center; }
+  .node .n-t { font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+  .node .n-s { font-size: 9px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .node.to { background: var(--accent); border-color: var(--accent); }
+  .node.to .n-t { color: var(--accent-ink); }
+  .node.to .n-s { color: rgba(255,255,255,0.6); }
+  .arrow { align-self: center; width: 26px; text-align: center; color: var(--text-muted); font-size: 16px; flex-shrink: 0; }
+
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+
+  .rule { margin-top: 16px; border: 1px solid var(--border-subtle); border-radius: 14px; background: var(--bg-surface); padding: 16px 18px; display: flex; gap: 13px; align-items: flex-start; }
+  .rule .bar { width: 3px; align-self: stretch; background: var(--accent); border-radius: 3px; flex-shrink: 0; }
+  .rule .rk { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px; }
+  .rule .rt { font-size: 13.5px; font-weight: 600; color: var(--text-primary); line-height: 1.6; }
+
+  .chips { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px; }
+  .chip { border: 1px solid var(--border-subtle); border-radius: 13px; padding: 14px 15px; background: var(--bg-primary); }
+  .chip .c-t { font-size: 13.5px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .chip .c-en { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
+  .chip .c-d { font-size: 11.5px; color: var(--text-secondary); margin-top: 5px; line-height: 1.5; }
+
+  .stats { margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .stat { border: 1px solid var(--border-subtle); border-radius: 13px; padding: 15px 9px; text-align: center; }
+  .stat .s-b { font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
+  .stat .s-l { font-size: 9.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+
+  .closer { margin-top: 20px; padding: 24px; border: 1px solid var(--border-strong); border-radius: 16px; background: var(--bg-surface); text-align: center; }
+  .closer .big { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; line-height: 1.4; }
+  .closer .small { font-size: 12.5px; color: var(--text-secondary); margin-top: 8px; line-height: 1.65; }
+
+  .ichip { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); border: 1px solid var(--border-strong); border-radius: 999px; padding: 4px 10px; }
+
+  .composer-wrap { padding: 8px 30px 18px; }
+  .composer { max-width: 164mm; margin: 0 auto; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 11px 12px 11px 18px; display: flex; align-items: center; gap: 12px; }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); font-weight: 500; }
+  .composer .send { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); flex-shrink: 0; position: relative; }
+  .composer .send::after { content: ""; position: absolute; left: 50%; top: 52%; width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink); transform: translate(-50%,-50%) rotate(-45deg); }
+  .disclaimer { max-width: 164mm; margin: 9px auto 0; text-align: center; font-size: 9.5px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — Скачок ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item active"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Скачок</div>
+      <div class="meta"><span class="ichip">Executive Brief</span></div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">В одном предложении — что Ghost даёт такого, чего раньше не существовало?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Ghost // The Leap</div>
+            <p class="lead">Как GPT научил мир говорить со знаниями — <span class="dim">Ghost учит мир говорить с тем, что видят камеры.</span></p>
+            <p>GPT не добавил ещё одну функцию к поисковику — он изменил сам способ доступа к знаниям. Ghost не добавляет «аналитику» к камерам — он меняет сам способ доступа к тому, что они видят. Это новый слой поверх существующих камер, понимающий сцены на естественном языке.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">the leap // from access to conversation</span><span class="copy mono">2026</span></div>
+              <div class="cb-body">
+                <div class="cmp">
+                  <div class="cmp-row">
+                    <span class="cmp-tag">GPT</span>
+                    <div class="node"><span class="n-t">Мир знаний</span><span class="n-s">documents</span></div>
+                    <div class="arrow">&#8250;</div>
+                    <div class="node to"><span class="n-t">Диалог со знаниями</span><span class="n-s">ask anything</span></div>
+                  </div>
+                  <div class="cmp-row">
+                    <span class="cmp-tag">GHOST</span>
+                    <div class="node"><span class="n-t">Мир на видео</span><span class="n-s">cameras</span></div>
+                    <div class="arrow">&#8250;</div>
+                    <div class="node to"><span class="n-t">Диалог с увиденным</span><span class="n-s">ask anything</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p>Суть одна: анализ и понимание снятых сред — <b>в прошлом, настоящем и будущем</b> — для широкого и бесконечного круга задач. И единственный предел — воображение того, кто этим пользуется.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Спросите Ghost, что он видит…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — От Grid к диалогу ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">От Grid к диалогу</div>
+      <div class="meta mono">02 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Что на самом деле меняется ещё до разговора об ИИ?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>Сначала меняется интерфейс. Большинство систем видеонаблюдения — это <b>Grid</b>: стена из 16/32/128 камер, на которую по-настоящему никто не смотрит. Ghost заменяет её списком диалогов, как в WhatsApp: <b>каждая камера становится диалогом</b>, а группы камер устроены точно как групповые чаты.</p>
+            <p>Это называется <b>3CLICKS</b>: даже в организации с сотнями камер на нескольких площадках и в разных странах — которые сегодня невозможно даже просматривать в реальном времени — до любого места можно добраться в три клика.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">3clicks // area &#8250; group &#8250; conversation</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">
+                <div class="pipe">
+                  <div class="node"><span class="n-t">Завод Израиль</span><span class="n-s">Area</span></div>
+                  <div class="arrow">&#8250;</div>
+                  <div class="node"><span class="n-t">Камеры офисов</span><span class="n-s">Group</span></div>
+                  <div class="arrow">&#8250;</div>
+                  <div class="node to"><span class="n-t">Лобби ресепшн</span><span class="n-s">Conversation</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">The Shift</span>
+                <div class="rt">Камеры уже видят всё. Ghost лишь позволяет работать с ними иначе — не сканировать стену мониторов, а открыть диалог и говорить.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Откройте площадку, группу или камеру…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — Разговор с камерами ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Разговор с камерами</div>
+      <div class="meta mono">03 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">А как всем этим управлять? Сколько нужно обучения?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p class="lead">Управление — это диалог. <span class="dim">Вы пишете на естественном языке — и это запускает самый продвинутый движок под капотом.</span></p>
+            <p>Никаких сложных экранов настроек, никаких правил для написания, никакой модели для обучения. Вы набираете вопрос или команду, как в чате, — и Ghost понимает и действует. За простотой на экране скрывается глубокая система зрения и понимания — точно так же, как за простым полем ввода в GPT стоит мощнейший движок.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Спрашивайте, а не ищите</div>
+                <div class="ft-desc">Вместо того чтобы прокручивать часы видео или переключаться между камерами — задайте вопрос и получите ответ. Каждая камера — это собеседник, который описывает то, что видит, на языке оператора.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Без технического языка</div>
+                <div class="ft-desc">«Проверь», «найди», «где», «опиши», «проанализируй», «подведи итог» — обычные человеческие слова, а не синтаксис системы. Кто умеет писать сообщение в WhatsApp, тот умеет управлять Ghost.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Ответ как от опытного человека</div>
+                <div class="ft-desc">Ghost не выдаёт «обнаружен объект». Он описывает сцену и контекст: кто, что, где, с каким предметом и в каком действии — как будто опытный специалист всмотрелся в кадр за вас.</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">«Опиши, кто сейчас подходит к посту охраны и что он несёт»…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — Прошлое · Настоящее · Будущее ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Прошлое · Настоящее · Будущее</div>
+      <div class="meta mono">04 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">В чём ключевая способность — с какой осью времени работает Ghost?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>Со всеми тремя. Ghost превращает каждый снятый момент в текстовую память, с которой можно говорить, — и поэтому один и тот же диалог охватывает прошлое, настоящее и будущее.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Прошлое <span class="ft-en">Past · Memory</span></div>
+                <div class="ft-desc">Каждая видеопоследовательность превращается в насыщенное текстовое описание с возможностью поиска. История, с которой можно говорить, — а не «система поиска по видео».</div>
+                <div class="ft-meta"><span class="mk">Example</span>«Что происходило в зоне разгрузки между 02:00 и 04:00 и кто сопровождал грузовик, въехавший через западные ворота?»</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Настоящее <span class="ft-en">Present · Live</span></div>
+                <div class="ft-desc">Вы спрашиваете и получаете живое описание того, что происходит прямо сейчас. Разбор обстановки в реальном времени — в одном диалоге или сразу по целой группе камер.</div>
+                <div class="ft-meta"><span class="mk">Example</span>«Опиши, кто сейчас находится на погрузочной платформе, и проверь, держит ли кто-нибудь длинный рабочий инструмент — например, металлический штырь или складную лестницу.»</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Будущее <span class="ft-en">Future · Automation</span></div>
+                <div class="ft-desc">Вы задаёте проверки и оповещения на естественном языке, а Ghost выполняет их непрерывно и докладывает. Он не «решает, что важно» — он выполняет ваши определения.</div>
+                <div class="ft-meta"><span class="mk">Example</span>«Каждое утро в 06:00 проверяй, не остались ли в переговорной подносы с едой или одноразовые стаканы со вчерашнего дня.»</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Спросите о прошлом, о настоящем или задайте проверку на будущее…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 5 — Предел — воображение ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Предел — воображение</div>
+      <div class="meta mono">05 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Каков список возможностей? Что Ghost умеет распознавать?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p class="lead">Списка возможностей нет. <span class="dim">Всё, что человек способен понять, глядя на изображение, — Ghost может проверить.</span></p>
+            <p>Обычные системы знают фиксированный список вещей и применяют к ним правила. У Ghost такого списка нет, и его не нужно обучать заранее. Мы и сами не знаем заранее, что вы захотите проверить, — и это нормально. Как только Ghost подключён к вашим камерам, вы определяете всё, что важно именно вам, своими словами.</p>
+            <div class="chips">
+              <div class="chip"><div class="c-t">Пример</div><div class="c-d">«Проверь, не стоит ли у зарядной станции на парковке мотоцикл, на руле которого висит чёрный шлем с белой полосой сбоку.»</div></div>
+              <div class="chip"><div class="c-t">Пример</div><div class="c-d">«Проверь, не стоит ли у склада грузовик, в открытом кузове которого лежат серый холодильник и белые пластиковые стулья.»</div></div>
+              <div class="chip"><div class="c-t">Пример</div><div class="c-d">«Проверь, не оставлены ли у аварийного выхода чемодан или большая сумка без присмотра в течение нескольких минут.»</div></div>
+              <div class="chip"><div class="c-t">Пример</div><div class="c-d">«Проверь, не осталась ли на столе в диспетчерской открытая чашка кофе рядом с клавиатурой или документами.»</div></div>
+            </div>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">The Only Limit</span>
+                <div class="rt">Предел Ghost — это воображение оператора. Если что-то можно описать словами — можно попросить Ghost это проверить.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Опишите своими словами, что вам важно проверить…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 6 — Внедрение в организации ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item active"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Внедрение в организации</div>
+      <div class="meta mono">06 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Что нужно, чтобы внедрить это в моей организации?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>Меньше, чем кажется. Ghost работает <b>поверх</b> существующей инфраструктуры камер — без замены оборудования и без долгого инфраструктурного проекта.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Поверх существующих камер</div>
+                <div class="ft-desc">Подключается к инфраструктуре, которая у вас уже есть. Не нужно менять камеры или регистраторы — Ghost добавляет поверх них слой понимания.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Знакомый интерфейс</div>
+                <div class="ft-desc">Список диалогов в стиле WhatsApp. Обучение короткое — кто умеет переписываться, тот умеет управлять. Внедрение не требует системных экспертов.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Масштабируется в вашем темпе</div>
+                <div class="ft-desc">Начинаете с одной площадки или зоны и расширяетесь до сотен камер на нескольких площадках и в разных странах — в том же интерфейсе, в те же три клика.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Встроенные память и документирование</div>
+                <div class="ft-desc">Каждое событие фиксируется, доступно для разбора и упорядоченного закрытия. Единый операционный центр собирает оповещения, задачи и инциденты из всех диалогов.</div>
+              </div></li>
+            </ul>
+            <div class="stats">
+              <div class="stat"><div class="s-b">0</div><div class="s-l">замен камер</div></div>
+              <div class="stat"><div class="s-b">3</div><div class="s-l">клика до любого места</div></div>
+              <div class="stat"><div class="s-b">&#8734;</div><div class="s-l">видов проверок</div></div>
+              <div class="stat"><div class="s-b">24/7</div><div class="s-l">непрерывная память</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Начните с одной площадки и расширяйтесь…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 7 — Где это работает ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item active"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Где это работает</div>
+      <div class="meta mono">07 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Для каких задач в организации это подходит?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>Везде, где есть камеры и есть вопросы. Один и тот же диалог, один и тот же интерфейс — разные задачи в каждом уголке организации.</p>
+            <div class="chips">
+              <div class="chip"><div class="c-t">Безопасность <span class="c-en">Security</span></div><div class="c-d">Разбор событий, контроль доступа в чувствительные зоны, предметы, оставленные без присмотра.</div></div>
+              <div class="chip"><div class="c-t">Охрана труда <span class="c-en">Safety · EHS</span></div><div class="c-d">Средства защиты, блокировка аварийных выходов, разлив жидкостей, порядок и безопасность в производственном цеху.</div></div>
+              <div class="chip"><div class="c-t">Операции <span class="c-en">Operations</span></div><div class="c-d">Загрузка, очереди, использование платформ и складов, автоматическое подведение итогов смены.</div></div>
+              <div class="chip"><div class="c-t">Чрезвычайные ситуации <span class="c-en">Emergency · HQ</span></div><div class="c-d">Живая оперативная картина с сотен камер в одном месте, операционный центр для ведения инцидента до закрытия.</div></div>
+            </div>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">One System, Many Needs</span>
+                <div class="rt">Не нужен отдельный продукт для каждого отдела. Один и тот же слой служит безопасности, охране труда, операциям и чрезвычайным ситуациям — и каждый специалист задаёт свои вопросы, на своём языке.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Какой вопрос для вас сейчас самый острый?…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 8 — Итог ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Executive Brief</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>Новый диалог</span></div>
+    <div class="nav-label">Brief</div>
+    <div class="nav-item"><span class="ix">01</span><span>Скачок</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>От Grid к диалогу</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Разговор с камерами</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Прошлое · Настоящее · Будущее</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Предел — воображение</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>Внедрение в организации</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Где это работает</span></div>
+    <div class="nav-item active"><span class="ix">08</span><span>Итог</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Confidential · Brief</span>Ghost — Visual Intelligence · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Итог</div>
+      <div class="meta mono">08 / 08</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Так что вынести из этого в одной строке?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>Ваши камеры уже видят всё. До сих пор нужен был человек, который смотрит, ищет и помнит. Ghost превращает всё это в диалог: вы спрашиваете на естественном языке — о прошлом, о настоящем и о том, что произойдёт, — и получаете ответ.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Качественный скачок, а не функция</div>
+                <div class="ft-desc">Как GPT изменил доступ к знаниям, так Ghost меняет доступ к тому, что видят камеры, — это новый слой, а не очередная аналитика.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">Просто снаружи, глубоко внутри</div>
+                <div class="ft-desc">Одно поле диалога запускает самый продвинутый движок. Управление — простое; понимание — глубокое.</div>
+              </div></li>
+            </ul>
+            <div class="closer">
+              <div class="big">Предел Ghost — это воображение оператора.</div>
+              <div class="small">Камеры уже видят всё. Ghost позволяет работать с ними иначе — на естественном языке, в прошлом, настоящем и будущем.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Перестаньте искать в видео. Просто спросите…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

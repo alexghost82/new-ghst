@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — שפת Ghost · מהדורת שותפים ומפיצים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* =========================================================
+     Ghost — שפת Ghost (Shared Language) · Team Edition
+     Black & White · ChatGPT-UI design line · LIGHT · RTL
+     Modern Hebrew (Assistant) + tactical mono (IBM Plex Mono)
+     Tokens follow Ghost light, accent neutralised to monochrome
+     ========================================================= */
+  :root {
+    --bg-primary: #ffffff;
+    --bg-sidebar: #f9f9f9;
+    --bg-surface: #f4f4f4;
+    --bg-surface-2: #ececec;
+    --bg-code: #f6f6f6;
+    --text-primary: #0d0d0d;
+    --text-secondary: #6e6e6e;
+    --text-muted: #9b9b9b;
+    --border-subtle: #e5e5e5;
+    --border-strong: #d4d4d4;
+    --accent: #0d0d0d;
+    --accent-ink: #ffffff;
+
+    --sans: "Assistant", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #e3e3e3;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono {
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* ---------- A4 page = one Ghost screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar (right in RTL) ---------- */
+  .sidebar {
+    width: 62mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-inline-end: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 13px;
+    gap: 6px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 4px 6px 16px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 15.5px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.01em; direction: ltr; line-height: 1.1;
+  }
+  .brand .name .sub {
+    display: block; font-size: 8.5px; font-weight: 500;
+    color: var(--text-muted); letter-spacing: 0.2em; margin-top: 3px;
+    text-transform: uppercase; font-family: var(--mono);
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 38px; padding: 0 13px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13px; font-weight: 500;
+  }
+  .newchat .plus { width: 15px; height: 15px; position: relative; opacity: 0.7; }
+  .newchat .plus::before, .newchat .plus::after { content: ""; position: absolute; background: var(--text-secondary); }
+  .newchat .plus::before { left: 6.5px; top: 0; width: 2px; height: 15px; border-radius: 2px; }
+  .newchat .plus::after { top: 6.5px; left: 0; height: 2px; width: 15px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 8.5px; font-weight: 600; color: var(--text-muted);
+    padding: 16px 10px 6px; letter-spacing: 0.2em;
+    font-family: var(--mono); text-transform: uppercase; direction: ltr;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    min-height: 33px; padding: 5px 11px;
+    border-radius: 10px;
+    font-size: 12px; color: var(--text-secondary);
+    line-height: 1.25; font-weight: 500;
+  }
+  .nav-item .ix { font-size: 9.5px; color: var(--text-muted); width: 15px; flex-shrink: 0; font-family: var(--mono); direction: ltr; }
+  .nav-item.active { background: var(--bg-surface); color: var(--text-primary); font-weight: 600; }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 13px 10px 2px;
+    font-size: 10.5px; color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .sidebar .foot .ml { font-family: var(--mono); letter-spacing: 0.16em; text-transform: uppercase; direction: ltr; display: block; font-size: 8.5px; color: var(--text-secondary); margin-bottom: 3px; }
+
+  /* ---------- Main column ---------- */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: 54px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 26px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread {
+    flex: 1; overflow: hidden;
+    padding: 28px 30px 8px;
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .wrap { width: 100%; max-width: 162mm; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  /* user message bubble */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    max-width: 82%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px; border-end-start-radius: 6px;
+    padding: 11px 17px;
+    font-size: 14px; line-height: 1.6; font-weight: 500;
+  }
+
+  /* assistant message */
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av { width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; overflow: hidden; margin-top: 2px; border: 1px solid var(--border-subtle); }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body .sender {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-muted); direction: ltr; margin-bottom: 10px;
+  }
+  .msg-ai .body p { font-size: 14px; line-height: 1.85; color: var(--text-primary); font-weight: 400; }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body b { font-weight: 700; }
+  .msg-ai .body .lead { font-size: 23px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.16em;
+    text-transform: uppercase; margin-bottom: 12px; direction: ltr;
+  }
+
+  /* term / feature list */
+  .feat { list-style: none; margin-top: 12px; display: flex; flex-direction: column; gap: 0; }
+  .feat li { padding: 14px 0; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 13px; align-items: flex-start; }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-top: 8px; flex-shrink: 0; }
+  .feat .ft-title { font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; letter-spacing: -0.01em; }
+  .feat .ft-en { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); direction: ltr; font-weight: 500; }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 5px; }
+  .feat .ft-meta { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); line-height: 1.55; }
+  .feat .ft-meta .mk { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); margin-inline-end: 8px; direction: ltr; }
+
+  /* navigation hierarchy pipeline (RTL: drills right -> left) */
+  .codeblock { margin-top: 16px; background: var(--bg-code); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; }
+  .codeblock .cb-head { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 9px 14px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border-subtle); }
+  .codeblock .cb-head .copy { font-size: 11px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 18px 16px; }
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+  .node { flex: 1; background: var(--bg-primary); border: 1px solid var(--border-strong); border-radius: 11px; padding: 13px 10px; text-align: center; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .node .n-t { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+  .node .n-s { font-size: 9px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; direction: ltr; }
+  .arrow { align-self: center; width: 28px; text-align: center; color: var(--text-muted); font-size: 17px; flex-shrink: 0; }
+
+  /* callout / holy-rule */
+  .rule { margin-top: 16px; border: 1px solid var(--border-subtle); border-radius: 14px; background: var(--bg-surface); padding: 16px 18px; display: flex; gap: 13px; align-items: flex-start; }
+  .rule .bar { width: 3px; align-self: stretch; background: var(--accent); border-radius: 3px; flex-shrink: 0; }
+  .rule .rk { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); direction: ltr; display: block; margin-bottom: 6px; }
+  .rule .rt { font-size: 13.5px; font-weight: 600; color: var(--text-primary); line-height: 1.6; }
+
+  /* approval-widget mock (Quick Directives) */
+  .widget { margin-top: 12px; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--bg-primary); padding: 14px 15px; max-width: 340px; }
+  .widget .wk { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); direction: ltr; display: flex; align-items: center; gap: 7px; }
+  .widget .wk::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .widget .wt { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 9px; letter-spacing: -0.01em; }
+  .widget .wrow { font-size: 11.5px; color: var(--text-secondary); margin-top: 7px; line-height: 1.5; }
+  .widget .wrow .wlab { font-family: var(--mono); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-inline-end: 7px; direction: ltr; }
+  .widget .wbtns { display: flex; gap: 8px; margin-top: 13px; }
+  .widget .pill { font-size: 11px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--text-secondary); }
+  .widget .pill.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  /* closer */
+  .closer { margin-top: 20px; padding: 22px; border: 1px solid var(--border-subtle); border-radius: 16px; background: var(--bg-surface); text-align: center; }
+  .closer .big { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.45; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 7px; line-height: 1.65; }
+
+  /* cheat-sheet table */
+  .gtable { margin-top: 14px; width: 100%; border-collapse: collapse; }
+  .gtable th, .gtable td { text-align: start; padding: 6.5px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  .gtable thead th { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; direction: ltr; padding-bottom: 9px; }
+  .gtable td.term { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.01em; }
+  .gtable td.en { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; color: var(--text-secondary); direction: ltr; white-space: nowrap; }
+  .gtable td.one { font-size: 11px; color: var(--text-secondary); line-height: 1.45; }
+  .gtable tbody tr:last-child td { border-bottom: none; }
+
+  /* internal-document chip */
+  .ichip { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); direction: ltr; border: 1px solid var(--border-strong); border-radius: 999px; padding: 4px 10px; }
+
+  /* composer */
+  .composer-wrap { padding: 8px 30px 18px; }
+  .composer { max-width: 162mm; margin: 0 auto; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 11px 18px 11px 12px; display: flex; align-items: center; gap: 12px; }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); font-weight: 500; }
+  .composer .send { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); flex-shrink: 0; position: relative; }
+  .composer .send::after { content: ""; position: absolute; left: 50%; top: 52%; width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-left: 2px solid var(--accent-ink); transform: translate(-50%,-50%) rotate(45deg); }
+  .disclaimer { max-width: 162mm; margin: 9px auto 0; text-align: center; font-size: 9.5px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase; direction: ltr; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — למה שפה אחת ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item active"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">למה יש לנו שפה אחת</div>
+      <div class="meta"><span class="ichip">Internal Document</span></div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">אנחנו שותפים ומפיצים של Ghost — למה חשוב שגם אנחנו נדבר בשפה שלכם?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p class="lead">Ghost הוא שכבה חדשה מעל המצלמות הקיימות — <span class="dim">וכששותף מדבר בשפה הזו, הלקוח שומע חברה אחת.</span></p>
+            <p>Ghost מבין סצנות ויזואליות בשפה טבעית, מאפשר לדבר עם המצלמות, לשאול כל שאלה על מה שרואים, ולהגדיר משימות והתראות בשפה חופשית. הגבול היחיד הוא הדמיון של מי שמשתמש בו.</p>
+            <p>הוא <b>אינו</b> מערכת זיהוי אובייקטים, Video Analytics או Smart CCTV, ואין לו רשימת יכולות סגורה. לכן גם השפה שונה: לא "המערכת זיהתה אדם", אלא "ליד שער הכניסה עומד מישהו במעיל כהה, ראשו מורכן מעל הטלפון, שלא עבר דרך השער כבר כמה דקות". אותה רמת הבנה של אדם חכם שמסתכל על המסך — וזה בדיוק מה שאתם מביאים ללקוח.</p>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">Internal · For Authorized Partners</span>
+                <div class="rt">זהו מסמך פנימי שאנחנו משתפים אתכם כשותפים מורשים. השפה הזו היא נכס: מי שמדבר Ghost נכון — מוכר ומסביר את Ghost נכון, בלי לצמצם אותו ל"מצלמה חכמה" משנת 2010.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל את Ghost על השפה שלנו…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — גולש ומפעיל ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק א' — מי משתמש</div>
+      <div class="meta mono">02 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מי המשתמשים של Ghost, ומה ההבדל ביניהם?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>שני סוגי משתמשים, ושאסור לבלבל ביניהם. ההבדל הוא בנקודת הזמן: לפני התחברות מול אחרי התחברות.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">גולש <span class="ft-en">Visitor</span></div>
+                <div class="ft-desc">מי שגולש כרגע באתר התדמית (האתר השיווקי הציבורי), לפני שהתחבר. עדיין לא לקוח, לא בהכרח יהפוך למפעיל. בא להבין מה זה Ghost, להתרשם, ואולי להתנסות.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>האדם שעומד בכניסה לחנות ומסתכל בחלון הראווה — עוד לא נכנס, עוד לא קנה.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">מפעיל <span class="ft-en">Operator</span></div>
+                <div class="ft-desc">מי שכבר מפעיל את Ghost בתוך המערכת עצמה, אחרי התחברות עם שם משתמש וסיסמה. זה המשתמש האמיתי: קב"ט, מנהל תפעול, חמ"ל, איש ביטחון — מי שעובד מול הקונסול ומקבל החלטות לפי מה ש-Ghost מראה.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>הטייס בקוקפיט. הגולש ראה את המטוס מבחוץ; המפעיל יושב בפנים ומטיס אותו.</div>
+              </div></li>
+            </ul>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">The Holy Rule</span>
+                <div class="rt">גולש = לפני התחברות, באתר התדמית. מפעיל = אחרי התחברות, בתוך המערכת. אסור לבלבל ביניהם — לא בדיבור, לא בכתיבה, לא בקוד.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">גולש או מפעיל? שאל את Ghost…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — 3CLICKS ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק ב' — 3CLICKS ועץ הניווט</div>
+      <div class="meta mono">03 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך מנווטים בין מאות מצלמות בלי קיר מסכים?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>רוב מערכות ה-CCTV הן Grid: קיר של 16/32/128 מצלמות שאף אחד לא באמת מסתכל עליו. <b>3CLICKS</b> מחליף את זה ברשימת שיחות, כמו WhatsApp — כל מצלמה היא צ'אט. גם במאות מצלמות בכמה מדינות, מגיעים לכל מקום בשלוש לחיצות.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">3clicks // area &#8250; group &#8250; conversation</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">
+                <div class="pipe">
+                  <div class="node"><span class="n-t">אזור</span><span class="n-s">Area</span></div>
+                  <div class="arrow">&#8249;</div>
+                  <div class="node"><span class="n-t">קבוצה</span><span class="n-s">Group</span></div>
+                  <div class="arrow">&#8249;</div>
+                  <div class="node"><span class="n-t">שיחה</span><span class="n-s">Conversation</span></div>
+                </div>
+              </div>
+            </div>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">אזור <span class="ft-en">Area</span></div>
+                <div class="ft-desc">המכל הארגוני הרחב ביותר. מקבץ יחד קבוצות מצלמות ושיחות, בדרך כלל לפי אתר פיזי או מיקום (מפעל, סניף, קומה, עיר). הרמה העליונה בעץ הניווט.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>תיקייה ראשית במחשב — בתוכה תת-תיקיות (קבוצות) וקבצים בודדים (שיחות).</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">קבוצה <span class="ft-en">Group</span></div>
+                <div class="ft-desc">קבוצת מצלמות בתוך אזור. רמת ביניים שמאגדת כמה שיחות שקשורות זו לזו (קומה, אגף, מתחם). תמיד יושבת תחת אזור אחד.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">שיחה <span class="ft-en">Conversation</span></div>
+                <div class="ft-desc">יחידת העבודה המרכזית: צ'אט חי מול מצלמה (או כמה). זה המקום שבו נפגשים המפעיל וה-AI — ובתוכו פועלות שלוש היכולות שבעמוד הבא.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>שיחת WhatsApp עם איש קשר אחד — רק שאיש הקשר הוא המצלמה, והיא עונה על מה שהיא רואה.</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">פתח שיחה עם מצלמה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — שלוש היכולות בשיחה ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">שלוש היכולות בתוך שיחה</div>
+      <div class="meta mono">04 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">כשאני בתוך שיחה — מה בעצם אפשר לעשות מול המצלמה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>בכל שיחה יש שלוש דרכים לעבוד מול המצלמה: לשאול על <b>העבר</b>, לשאול על <b>ההווה</b>, ולהפעיל פעולה <b>במהירות</b>.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">חקירה <span class="ft-en">Investigation</span></div>
+                <div class="ft-desc">שאלה חופשית על מה שכבר קרה. שואלים בשפה טבעית כל דבר שאירע בעבר, ומקבלים תשובה מיידית — על בסיס הידע שנצבר בשיחה מכל הכלים (טרקינג, תצפיות, היסטוריית התשובות). לא גוללים אחורה בווידאו; שואלים, ו-Ghost עונה מהזיכרון.</div>
+                <div class="ft-meta"><span class="mk">Example</span>"מתי נכנס לאחרונה רכב מסחרי לבן דרך השער המערבי, ומי ליווה אותו?"</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">שיחה <span class="ft-en">Live Q&amp;A</span></div>
+                <div class="ft-desc">דיבור על מה שקורה <b>כרגע</b> בפריים החי — כמו שידור, אבל מול שיחה בודדת. שואלים בשפת המפעיל ומקבלים תשובה על ההווה המצולם: בדוק, חפש, איפה, תאר, נתח. זו העבודה היומיומית מול הזירה החיה.</div>
+                <div class="ft-meta"><span class="mk">Example</span>"תאר מי נמצא עכשיו ברציף הפריקה, וחפש אם מישהו מחזיק כלי עבודה ארוך."</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">הנחיות מהירות <span class="ft-en">Quick Directives</span></div>
+                <div class="ft-desc">הדרך המהירה להפעיל פעולה. מקלידים <b>+</b>, כותבים בשפה טבעית מה רוצים — ו-Ghost מנסח את זה כטיוטת <b>משימה</b> או <b>התראה</b> ומגיש ווידג'ט לאישור בצ'אט. לחיצה אחת, והפעולה פעילה.</div>
+                <div class="widget">
+                  <div class="wk">Ghost // Draft for Review</div>
+                  <div class="wt">טיוטת התראה</div>
+                  <div class="wrow"><span class="wlab">Report When</span>ליד עמדת הטעינה בחניון עומד אופנוע שעל הכידון תלויה קסדה.</div>
+                  <div class="wbtns"><span class="pill primary">אשר והפעל</span><span class="pill">אשר ללא הפעלה</span></div>
+                </div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">חקור את העבר, שאל על ההווה, או הקלד + לפעולה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 5 — שידור · התראה · משימה ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">שידור · התראה · משימה</div>
+      <div class="meta mono">05 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">ואיך גורמים ל-Ghost לעבוד בשבילי גם כשאני לא מול המסך?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>שלושה כלים שהופכים שיחה ממענה חד-פעמי לעין שעובדת בשבילך מסביב לשעון.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">שידור <span class="ft-en">Broadcast</span></div>
+                <div class="ft-desc">הודעה אחת שנשלחת בו-זמנית לכל המצלמות באזור או בקבוצה. במקום לשאול עשרים מצלמות בנפרד, שואלים פעם אחת — וכל מצלמה עונה על מה שהיא רואה.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>הודעה בקבוצת WhatsApp: כותבים פעם אחת, כל חבר מגיב בנפרד.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">התראה <span class="ft-en">Alert</span></div>
+                <div class="ft-desc">תנאי שהמפעיל מגדיר במילים שלו, ש-Ghost בודק ברציפות מול הפריימים החיים. כשהתנאי מתקיים — נדלקת התראה ונשלחת בזמן אמת. מנוסחת בשפה חופשית, לא מתוך רשימה סגורה.</div>
+                <div class="ft-meta"><span class="mk">Example</span>"אם ליד עמדת הטעינה עומד אופנוע שעל הכידון תלויה קסדה שחורה עם פס לבן." (ולא: "אם יש רכב" — זה מקטין את Ghost.)</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">משימה <span class="ft-en">Task</span></div>
+                <div class="ft-desc">בדיקה מתוזמנת. במקום שהמפעיל יזכור לבדוק משהו, Ghost עושה זאת אוטומטית — פעם אחת, כל פרק זמן, או מדי יום בשעה קבועה — ומדווח בחזרה.</div>
+                <div class="ft-meta"><span class="mk">Example</span>"כל בוקר ב-06:00 בדוק אם בחדר הישיבות נשארו מגשי אוכל או כוסות מהיום הקודם."</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הגדר שידור, התראה או משימה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 6 — זיכרון ותיעוד ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item active"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">זיכרון ותיעוד</div>
+      <div class="meta mono">06 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך Ghost זוכר מה קרה לאורך זמן, ולא רק רגע בודד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>שתי שכבות זיכרון שמזינות את ה<b>חקירה</b>: אחת רושמת כל מי ומה שעבר, השנייה מסכמת בעצמה את התמונה הגדולה.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">טרקינג <span class="ft-en">Tracking</span></div>
+                <div class="ft-desc">סריקת רקע רציפה של כל המצלמות בשיחה. כל אדם, רכב או אובייקט חדש שנכנס לפריים מקבל פרופיל מלא עם תיאור, ונרשם לטבלה מסודרת. נדלק לכל שיחה ודורש מצלמה מוגדרת.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>פנקס נוכחות חי בכניסה לאתר — לא "כמה נכנסו", אלא יומן מסודר של מי ומה עבר, איך נראה, ומתי.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">תצפיות <span class="ft-en">Observations</span></div>
+                <div class="ft-desc">מה ש-Ghost שם לב אליו לאורך זמן ומסכם בעצמו. מכל תשובה הוא שולף את הפרטים המהותיים (אנשים, רכבים, סביבה, חפצים) וזוכר אותם — כך שאפשר לשאול אחר כך "מה ראית היום?" ולקבל תמונה מלאה.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>יומן מבצעים של מי שישב במשמרת — בסוף המשמרת יש תקציר מסודר של כל מה שקרה.</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל "מה ראית היום?"…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 7 — Sitelligence ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item active"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Sitelligence&#8480;</div>
+      <div class="meta mono">07 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה זה Sitelligence, ובמה זה שונה משיחה רגילה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p class="lead">סריקת סביבה חד-פעמית ומעמיקה — <span class="dim">דוח מודיעיני, לא הודעת צ'אט.</span></p>
+            <p>במקום שיחה רגילה, Ghost לוקח פריים אחד חי ומפיק עליו דוח מודיעיני מובנה: סיווג הסביבה, מה שתקין, מה שחריג, ומה דורש תשומת לב — בפורמט שמתאים להגשה למנהל ולשמירה כקובץ. נפתח מכפתור הסריקה בראש השיחה; הפלט הוא דוח, לא הודעת צ'אט.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">איך זה עובד</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>בדיקת רופא יסודית מול מדידת חום. שיחה רגילה היא שאלה ספציפית; Sitelligence&#8480; הוא דוח 360&#176; על כל מה שקורה בזירה ברגע זה.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">שם המותג <span class="ft-en">Brand Term</span></div>
+                <div class="ft-desc">Sitelligence&#8480; הוא מונח קנייני של Ghost. נכתב תמיד באנגלית, עם סימן ה-&#8480;. (בעבר נקרא "Site Intelligence" / "סריקת סביבה".)</div>
+              </div></li>
+            </ul>
+            <div class="rule">
+              <span class="bar"></span>
+              <div>
+                <span class="rk">Proprietary Term</span>
+                <div class="rt">לעולם לא לתרגם ולא לכתוב בעברית — תמיד <span class="mono">Sitelligence&#8480;</span>, באנגלית, עם הסימן.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הפק דוח Sitelligence&#8480; על הזירה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 8 — תצוגות מבצעיות ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item active"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">תצוגות מבצעיות</div>
+      <div class="meta mono">08 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה רואים את כל ההתראות והאירועים במקום אחד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <p>שתי תצוגות שמרכזות את העבודה: אחת לראייה כוללת, השנייה לניהול אירוע מפתיחה ועד סגירה.</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div>
+                <div class="ft-title">מרכז מבצעים <span class="ft-en">Operations Board</span></div>
+                <div class="ft-desc">התצוגה שמאחדת לתמונה אחת את כל מה שדורש את העין של המפעיל מכל השיחות: התראות שנדרכו, משימות פעילות, ותקריות פתוחות. במקום לעבור שיחה-שיחה, רואים הכל במקום אחד עם סינון לפי אזור/קבוצה.</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>לוח המחוונים בקוקפיט, או מסך החמ"ל — כל מה שנדרש למבט מהיר, במבט אחד.</div>
+              </div></li>
+              <li><span class="dot"></span><div>
+                <div class="ft-title">לוח ניהול אירועים <span class="ft-en">Incident Board</span></div>
+                <div class="ft-desc">המקום שבו התראה הופכת לאירוע מתויק: כל פריט מקבל סטטוס, מטופל, ונסגר עם תיעוד (מה קרה, מה נעשה, מי טיפל). ההבדל בין "נדלקה נורה" לבין "ניהלנו את האירוע עד הסוף".</div>
+                <div class="ft-meta"><span class="mk">Analogy</span>מערכת קריאות שירות — לא מספיק לדעת שמשהו קרה; צריך מי לקח אחריות, מה עשה, ומתי נסגר.</div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">פתח את מרכז המבצעים…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 9 — צ'יט-שיט ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon-light.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Shared Language</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>שיחה חדשה</span></div>
+    <div class="nav-label">Glossary</div>
+    <div class="nav-item"><span class="ix">01</span><span>למה שפה אחת</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>גולש ומפעיל</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>3CLICKS ועץ הניווט</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שלוש היכולות בשיחה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>שידור · התראה · משימה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>זיכרון ותיעוד</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>Sitelligence&#8480;</span></div>
+    <div class="nav-item"><span class="ix">08</span><span>תצוגות מבצעיות</span></div>
+    <div class="nav-item active"><span class="ix">09</span><span>צ'יט-שיט</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><span class="ml">Internal · Partners</span>מילון השפה של Ghost · לשותפים מורשים · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">צ'יט-שיט — סיכום מהיר</div>
+      <div class="meta mono">09 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">תן לי את כל המילון בשורה אחת לכל מונח.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon-light.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="sender">Ghost</div>
+            <table class="gtable">
+              <thead><tr><th>מונח</th><th>English</th><th>במשפט אחד</th></tr></thead>
+              <tbody>
+                <tr><td class="term">גולש</td><td class="en">Visitor</td><td class="one">מבקר באתר התדמית, לפני התחברות.</td></tr>
+                <tr><td class="term">מפעיל</td><td class="en">Operator</td><td class="one">משתמש מחובר שעובד בתוך המערכת.</td></tr>
+                <tr><td class="term">3CLICKS</td><td class="en">3CLICKS</td><td class="one">אזור &#8249; קבוצה &#8249; מצלמה — כל מקום בשלוש לחיצות.</td></tr>
+                <tr><td class="term">אזור</td><td class="en">Area</td><td class="one">המכל הארגוני הרחב: מקבץ קבוצות ושיחות.</td></tr>
+                <tr><td class="term">קבוצה</td><td class="en">Group</td><td class="one">קבוצת מצלמות בתוך אזור.</td></tr>
+                <tr><td class="term">שיחה</td><td class="en">Conversation</td><td class="one">צ'אט חי מול מצלמה — יחידת העבודה המרכזית.</td></tr>
+                <tr><td class="term">חקירה</td><td class="en">Investigation</td><td class="one">שאלה חופשית על מה שכבר קרה — תשובה מיידית מהזיכרון.</td></tr>
+                <tr><td class="term">שיחה (חיה)</td><td class="en">Live Q&amp;A</td><td class="one">שאלות על ההווה המצולם: בדוק, חפש, איפה, תאר, נתח.</td></tr>
+                <tr><td class="term">הנחיות מהירות</td><td class="en">Quick Directives</td><td class="one">"+" ושפה טבעית &#8592; טיוטת משימה/התראה לאישור בצ'אט.</td></tr>
+                <tr><td class="term">שידור</td><td class="en">Broadcast</td><td class="one">הודעה אחת לכל המצלמות באזור/קבוצה בבת אחת.</td></tr>
+                <tr><td class="term">התראה</td><td class="en">Alert</td><td class="one">תנאי חופשי ש-Ghost בודק ברציפות ומתריע עליו.</td></tr>
+                <tr><td class="term">משימה</td><td class="en">Task</td><td class="one">בדיקה מתוזמנת שרצה אוטומטית ומדווחת.</td></tr>
+                <tr><td class="term">טרקינג</td><td class="en">Tracking</td><td class="one">סריקת רקע רציפה שמתעדת כל מי ומה שעבר.</td></tr>
+                <tr><td class="term">תצפיות</td><td class="en">Observations</td><td class="one">מה ש-Ghost זכר וסיכם לאורך זמן.</td></tr>
+                <tr><td class="term">Sitelligence&#8480;</td><td class="en">Sitelligence&#8480;</td><td class="one">דוח סביבה מובנה וחד-פעמי על פריים אחד.</td></tr>
+                <tr><td class="term">מרכז מבצעים</td><td class="en">Operations Board</td><td class="one">תצוגה אחת לכל ההתראות, המשימות והתקריות.</td></tr>
+                <tr><td class="term">לוח ניהול אירועים</td><td class="en">Incident Board</td><td class="one">מעקב אירוע מתויק מפתיחה ועד סגירה.</td></tr>
+              </tbody>
+            </table>
+            <div class="closer">
+              <div class="big">כשאתם מדברים Ghost — הלקוח שומע חברה אחת.</div>
+              <div class="small">מסמך פנימי לשותפים ומפיצים מורשים של Ghost. דברו את השפה הזו, והעבירו אותה הלאה באותו טון יבש ומדויק.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">דבר Ghost…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

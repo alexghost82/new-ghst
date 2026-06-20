@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost // Brain — Classified Internal Operating Brain</title>
+<style>
+  /* =========================================================
+     Ghost // BRAIN — Classified Internal Operating Brain
+     Black & White · ChatGPT-UI design line (gopdf)
+     Hebrew RTL body, LTR pockets for code / mono labels
+     ========================================================= */
+  :root {
+    --bg-primary: #212121;
+    --bg-sidebar: #171717;
+    --bg-surface: #2f2f2f;
+    --bg-surface-hover: #3a3a3a;
+    --bg-code: #1e1e1e;
+    --text-primary: #ececec;
+    --text-secondary: #b4b4b4;
+    --text-muted: #767676;
+    --border-subtle: #3a3a3a;
+    --accent: #ececec;
+    --accent-ink: #171717;
+    --classified: #ef4444; /* functional red — classification status only */
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Heebo", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #0d0d0d;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+  [dir="ltr"], .ltr { direction: ltr; unicode-bidi: isolate; }
+
+  /* ---------- A4 page = one ChatGPT screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar (LTR, English mono brand line) ---------- */
+  .sidebar {
+    width: 64mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-left: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 6px;
+    direction: ltr;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 14px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 14.5px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+  .brand .name .sub {
+    display: block; font-size: 9px; font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.04em; margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 38px; padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+  }
+  .newchat .plus { width: 16px; height: 16px; position: relative; opacity: 0.85; }
+  .newchat .plus::before, .newchat .plus::after { content: ""; position: absolute; background: var(--text-secondary); }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+    padding: 12px 10px 4px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    height: 30px; padding: 0 11px;
+    border-radius: 10px;
+    font-size: 11.5px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-item .ix { font-size: 9.5px; color: var(--text-muted); width: 16px; font-family: var(--mono); }
+  .nav-item.active { background: var(--bg-surface); color: var(--text-primary); }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 12px 10px 2px;
+    font-size: 9.5px; color: var(--text-muted);
+    line-height: 1.6; letter-spacing: 0.04em;
+  }
+  .sidebar .foot b { color: var(--classified); font-weight: 700; }
+
+  /* ---------- Main column ---------- */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: 50px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+  .topbar .cls { font-size: 9px; letter-spacing: 0.18em; color: var(--classified); font-weight: 700; }
+
+  .thread {
+    flex: 1; overflow: hidden;
+    padding: 24px 28px 8px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .wrap { width: 100%; max-width: 152mm; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  /* user message bubble */
+  .msg-user { display: flex; justify-content: flex-start; }
+  .msg-user .bubble {
+    max-width: 82%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 18px;
+    padding: 10px 15px;
+    font-size: 13.5px; line-height: 1.55;
+  }
+
+  /* assistant message */
+  .msg-ai { display: flex; gap: 13px; }
+  .msg-ai .av { width: 27px; height: 27px; border-radius: 8px; flex-shrink: 0; overflow: hidden; margin-top: 2px; }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body p { font-size: 13px; line-height: 1.7; color: var(--text-primary); }
+  .msg-ai .body p + p { margin-top: 10px; }
+  .msg-ai .body p .dim { color: var(--text-secondary); }
+  .msg-ai .body .lead { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-size: 10px; color: var(--text-muted); letter-spacing: 0.16em;
+    text-transform: uppercase; margin-bottom: 9px; font-family: var(--mono);
+  }
+  .msg-ai .body .kicker.cls { color: var(--classified); }
+  .msg-ai .body h4 {
+    font-size: 12px; color: var(--text-muted); letter-spacing: 0.06em;
+    text-transform: uppercase; margin: 16px 0 2px; font-weight: 600; font-family: var(--mono);
+  }
+  code, .code {
+    font-family: var(--mono); font-size: 0.92em; color: var(--text-primary);
+    background: var(--bg-code); border: 1px solid var(--border-subtle);
+    border-radius: 5px; padding: 0.5px 5px; direction: ltr; unicode-bidi: isolate;
+  }
+
+  /* principle / feature list */
+  .feat { list-style: none; margin-top: 12px; display: flex; flex-direction: column; }
+  .feat li { padding: 11px 0; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 12px; align-items: flex-start; }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-primary); margin-top: 7px; flex-shrink: 0; }
+  .feat .ft-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .feat .ft-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; margin-top: 2px; }
+
+  /* gtable — monochrome data table replacing md tables */
+  .gtable { margin-top: 14px; border: 1px solid var(--border-subtle); border-radius: 11px; overflow: hidden; }
+  .gt-row { display: flex; border-bottom: 1px solid var(--border-subtle); }
+  .gt-row:last-child { border-bottom: none; }
+  .gt-row.head { background: #2a2a2a; }
+  .gt-cell { flex: 1; padding: 9px 12px; font-size: 11.5px; line-height: 1.5; color: var(--text-secondary); }
+  .gt-cell + .gt-cell { border-inline-start: 1px solid var(--border-subtle); }
+  .gt-row.head .gt-cell { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+  .gt-cell.k { color: var(--text-primary); font-weight: 600; flex: 0.85; }
+  .gt-cell.n { flex: 0.55; }
+
+  /* flow — vertical pipeline (mermaid replacement) */
+  .flow { margin-top: 14px; display: flex; flex-direction: column; align-items: stretch; }
+  .flow .fl { border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--bg-surface); padding: 10px 14px; }
+  .flow .fl .f-t { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+  .flow .fl .f-s { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.45; }
+  .flow .fl-arrow { align-self: center; color: var(--text-muted); font-size: 13px; padding: 4px 0; }
+
+  /* codeblock (pseudo-snippet) */
+  .codeblock { margin-top: 14px; background: var(--bg-code); border: 1px solid var(--border-subtle); border-radius: 10px; overflow: hidden; direction: ltr; }
+  .codeblock .cb-head { display: flex; align-items: center; justify-content: space-between; background: #2a2a2a; padding: 7px 14px; font-size: 10.5px; color: var(--text-secondary); }
+  .codeblock .cb-head .copy { font-size: 10.5px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 14px 16px; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap; }
+  .codeblock .cb-body .hl { color: var(--text-primary); }
+
+  /* chips grid */
+  .chips { margin-top: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .chip { border: 1px solid var(--border-subtle); border-radius: 11px; padding: 12px 13px; background: rgba(255,255,255,0.02); }
+  .chip .c-t { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+  .chip .c-d { font-size: 11px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+
+  /* stat strip */
+  .stats { margin-top: 14px; display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; }
+  .stat { border: 1px solid var(--border-subtle); border-radius: 11px; padding: 13px 8px; text-align: center; }
+  .stat .s-b { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .stat .s-l { font-size: 9.5px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+  .closer { margin-top: 18px; padding: 22px; border: 1px solid var(--border-subtle); border-radius: 16px; background: rgba(255,255,255,0.02); text-align: center; }
+  .closer .big { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.35; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 7px; line-height: 1.5; }
+
+  /* note callout */
+  .note { margin-top: 13px; border-inline-start: 2px solid var(--text-muted); padding: 4px 13px; }
+  .note p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+  .note.warn { border-inline-start-color: var(--classified); }
+
+  /* ---------- Composer ---------- */
+  .composer-wrap { padding: 8px 28px 18px; }
+  .composer { max-width: 152mm; margin: 0 auto; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 10px 18px 10px 12px; display: flex; align-items: center; gap: 12px; }
+  .composer .ph { flex: 1; font-size: 13px; color: var(--text-muted); }
+  .composer .send { width: 29px; height: 29px; border-radius: 50%; background: var(--accent); flex-shrink: 0; position: relative; }
+  .composer .send::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink); transform: translate(-50%,-50%) rotate(-45deg); }
+  .disclaimer { max-width: 152mm; margin: 8px auto 0; text-align: center; font-size: 10px; color: var(--text-muted); letter-spacing: 0.04em; }
+
+  /* ---------- Cover ---------- */
+  .cover-main { flex: 1; display: flex; flex-direction: column; }
+  .cover-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; gap: 0; }
+  .cover-body .stamp {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--classified); border: 1px solid var(--classified); border-radius: 6px;
+    padding: 7px 16px; font-weight: 700;
+  }
+  .cover-body .ico { width: 70px; height: 70px; margin: 40px 0 26px; border-radius: 18px; overflow: hidden; }
+  .cover-body .ico img { width: 100%; height: 100%; display: block; }
+  .cover-body .title-en { font-family: var(--mono); font-size: 13px; letter-spacing: 0.28em; color: var(--text-muted); text-transform: uppercase; }
+  .cover-body h1 { font-size: 42px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; color: var(--text-primary); margin: 14px 0 16px; }
+  .cover-body .deck { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 118mm; }
+  .cover-body .rule { width: 54mm; height: 1px; background: var(--border-subtle); margin: 30px 0; }
+  .cover-body .meta-grid { display: flex; gap: 36px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+  .cover-body .meta-grid b { display: block; color: var(--text-secondary); font-weight: 600; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ====================== PAGE 01 — COVER ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="cover-main">
+    <div class="topbar">
+      <div class="title">Document Cover</div>
+      <div class="cls mono">CLASSIFIED</div>
+    </div>
+    <div class="cover-body">
+      <div class="stamp">Confidential · Eyes Only</div>
+      <div class="ico"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+      <div class="title-en mono">Ghost // Internal Operating Brain</div>
+      <h1>המוח של Ghost</h1>
+      <p class="deck">המסמך החוקי-פנימי שמסביר איך Ghost חושב, מדבר ומחליט — ואיפה בדיוק לגעת כדי לשנות כל דבר באופי, בטון, במבנה התשובה ובהתנהגות הרקע. בידיים שמחזיקות את המסמך הזה נמצא המפתח למוח.</p>
+      <div class="rule"></div>
+      <div class="meta-grid">
+        <div>Part I<b>מדריך המוח</b></div>
+        <div>Part II<b>מדריך למחזיק</b></div>
+        <div>Handling<b>Eyes Only</b></div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified · Do not distribute</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 02 — חלק 0 ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item active"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 0 — מי זה Ghost ואיפה "המוח" חי</div>
+      <div class="meta mono">02 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מי זה Ghost בעצם, ואיפה "המוח" שלו חי?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Part I · The Brain</div>
+            <p class="lead">Ghost הוא <span class="dim">שכבת הבנה מעל המצלמות.</span></p>
+            <p>הוא לא "מערכת זיהוי אובייקטים" — הוא מסתכל על פריים ומדבר על מה שקורה בשפה אנושית, כמו שומר לילה מנוסה שיושב ליד המפעיל ומספר לו מה הוא רואה. המפעיל שואל על ההווה ועל העבר, מגדיר התראות ומשימות ומבקש דוחות — והוא עונה.</p>
+            <h4 class="mono">שתי "נפשות" — נפרדות לחלוטין</h4>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">נפש</div><div class="gt-cell">מתי פעילה</div><div class="gt-cell">קובע אותה</div></div>
+              <div class="gt-row"><div class="gt-cell k">אישיות הצ'אט</div><div class="gt-cell">כל שיחה רגילה, התראות-טקסט, משימות</div><div class="gt-cell"><code>GHOST_IDENTITY</code> ב-<code>prompt_builder.py</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">מנוע Site Intelligence</div><div class="gt-cell">סריקת מקום חד-פעמית ("סריקת אתר")</div><div class="gt-cell"><code>SITE_INTELLIGENCE_SYSTEM</code> באותו קובץ</div></div>
+            </div>
+            <div class="note"><p>שינוי <code>GHOST_IDENTITY</code> <b>לא</b> משנה את דוח ה-Site Intelligence, ולהיפך. אלה שני מוחות שמדברים אחרת בכוונה.</p></div>
+            <h4 class="mono">כלל הזהב לעורך</h4>
+            <p>יש <span class="dim">שער יחיד</span> שדרכו עוברת כל בקשה למודל — <span class="dim">שער המודל</span> (model gateway). רק שם נקראת בפועל בקשת ההשלמה. כל שאר הקבצים רק <b>בונים את מערך ה-messages</b> ומעבירים אותו לשם. רוצה לשנות מה Ghost אומר ואיך → ערוך את הטקסטים. רוצה לשנות כמה זה עולה / כמה מהר / איזה מודל → ערוך את <code>config.py</code> או את פרמטרי שער המודל.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל את Ghost על המבנה הפנימי…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 03 — חלק 0 / הרכבת הפרומפט ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item active"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 0 — מאיפה מגיע כל רכיב בפרומפט</div>
+      <div class="meta mono">03 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך נבנה ה-system message של הצ'אט, שכבה אחר שכבה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>הפונקציה <code>build_prompt()</code> מרכיבה את ה-<code>system</code> המלא מבלוקים קבועים, בסדר קבוע. כל בלוק נכנס רק אם יש לו תוכן, בתוך תקציב הטוקנים:</p>
+            <div class="flow">
+              <div class="fl"><div class="f-t">תאריך ושעה</div><div class="f-s">Asia/Jerusalem — עוגן זמן לכל תשובה</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">GHOST_IDENTITY</div><div class="f-s">האישיות, הטון, כללי מבנה התשובה</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">כפיית שפה</div><div class="f-s">עברית / אנגלית לפי ה-locale</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">ידע עצמי + 9 היכולות</div><div class="f-s">anti-hallucination — מה Ghost באמת יודע לעשות</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">הנחיית המפעיל (פר-שיחה)</div><div class="f-s">המקום היחיד שמותאם מ-UI בלי קוד</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">זיכרונות → לוג תצפיות → ידע → לוג מעקב</div><div class="f-s">הקשר נשלף שמוזרק לפי הצורך</div></div>
+              <div class="fl-arrow">↓</div>
+              <div class="fl"><div class="f-t">שער המודל</div><div class="f-s">השליחה בפועל — streaming חזרה למפעיל</div></div>
+            </div>
+            <div class="note"><p>אחרי ה-system נבנה מערך ה-<code>messages</code>: few-shot (אם רלוונטי) → היסטוריה עם חותמת שעה → ההודעה הנוכחית (טקסט, ואם יש פריים — גם <code>image_url</code>).</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על סדר הרכבת הפרומפט…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 04 — חלק 1 / מפת GHOST_IDENTITY ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item active"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 1 — מפת GHOST_IDENTITY</div>
+      <div class="meta mono">04 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה בדיוק שולט באישיות ובטון של Ghost, ואיפה זה כתוב?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>כל מה שמגדיר את האופי, הטון וכללי הניסוח של Ghost בצ'אט חי בקבוע הענק <code>GHOST_IDENTITY</code> ב-<code>prompt_builder.py</code>. הוא מחולק לתת-סעיפים — כל אחד שולט בהיבט אחר:</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">תת-סעיף</div><div class="gt-cell">מה הוא שולט</div></div>
+              <div class="gt-row"><div class="gt-cell k">פתיחה</div><div class="gt-cell">הפרסונה הבסיסית — "שומר לילה מנוסה, לא נבהל, לא מטיף"</div></div>
+              <div class="gt-row"><div class="gt-cell k">Who you are</div><div class="gt-cell">דיבור אנושי, משפטים קצרים, איסור להכריז "אני AI"</div></div>
+              <div class="gt-row"><div class="gt-cell k">Answer scope</div><div class="gt-cell">הכלל החשוב ביותר על אורך — לענות בדיוק על מה שנשאל</div></div>
+              <div class="gt-row"><div class="gt-cell k">What you can describe</div><div class="gt-cell">קטלוג הפרטים המותרים (גיל משוער, לבוש, רכב, סביבה)</div></div>
+              <div class="gt-row"><div class="gt-cell k">What you do NOT do</div><div class="gt-cell">מגבלות — לא שמות, לא גיל מספרי, לא רגשות/כוונות</div></div>
+              <div class="gt-row"><div class="gt-cell k">Classified</div><div class="gt-cell">סודיות טכנולוגית — לא לחשוף מודלים/ספריות/מנגנון פנימי</div></div>
+              <div class="gt-row"><div class="gt-cell k">Anti-Generic</div><div class="gt-cell">איסור לכתוב "אדם"/"someone" בלי פרט קונקרטי</div></div>
+              <div class="gt-row"><div class="gt-cell k">Response style</div><div class="gt-cell">כללי מבנה הטקסט — פורמט, כותרות, bold, bullets</div></div>
+              <div class="gt-row"><div class="gt-cell k">Temporal · Period reports</div><div class="gt-cell">פורמט זמנים ומבנה דוחות יום/שבוע/חודש</div></div>
+              <div class="gt-row"><div class="gt-cell k">Observation Log</div><div class="gt-cell">הלוג = מקור אמת לשאלות "מי היה כאן"</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על סעיף ספציפי באישיות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 05 — חלק 1 / Response style + שפה + יכולות ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item active"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 1 — סגנון, שפה ומה ניתן בלי קוד</div>
+      <div class="meta mono">05 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">למה אין כותרות מודגשות בצ'אט, ומה אפשר לשנות בלי לגעת בקוד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>סעיף <code>Response style</code> קובע איך <span class="dim">נראית</span> תשובה:</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">אין כותרות קבועות או מודגשות</div><div class="ft-desc">אסור "Scene Overview:", "People:" וכותרות bold.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">פותחים במה שחשוב</div><div class="ft-desc">lead with what matters — לא ברשימה, ומגוונים את הקצב.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">לא ממלאים קטגוריות ריקות</div><div class="ft-desc">אסור "אין רכבים" / "no anomalies"; Markdown רק כשעוזר; בלי hedging.</div></div></li>
+            </ul>
+            <div class="note"><p>רוצה ש-Ghost <b>כן</b> יחזיר תשובות מובנות עם כותרות מודגשות בצ'אט — כאן המקום. שים לב שזה מנוגד במכוון לאופי ה-Site Intelligence שדורש כותרות.</p></div>
+            <h4 class="mono">שפה ויכולות</h4>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">מה</div><div class="gt-cell">משנים מ-UI?</div><div class="gt-cell">איפה</div></div>
+              <div class="gt-row"><div class="gt-cell k">הנחיית תפקיד לשיחה</div><div class="gt-cell">כן</div><div class="gt-cell"><code>system_prompt</code> של השיחה (בהגדרות)</div></div>
+              <div class="gt-row"><div class="gt-cell k">אופי, טון, איסורים</div><div class="gt-cell">לא — קוד</div><div class="gt-cell"><code>GHOST_IDENTITY</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">שפת תגובה</div><div class="gt-cell">לא — קוד</div><div class="gt-cell">כפיית השפה ב-<code>prompt_builder.py</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">רשימת היכולות (9)</div><div class="gt-cell">לא — JSON</div><div class="gt-cell"><code>ghost_capabilities.json</code></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל מה אפשר לשנות בלי קוד…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 06 — חלק 2 / build_prompt + סדר ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 2 — איך נבנה מבנה ההודעה</div>
+      <div class="meta mono">06 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה נכנס ל-build_prompt, ובאיזה סדר ה-system נבנה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>הפונקציה <code>build_prompt()</code> מקבלת את כל ההקשר ומרכיבה ממנו בקשה. הקלטים העיקריים:</p>
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">build_prompt — inputs</span><span class="copy mono">copy</span></div>
+              <div class="cb-body"><span class="hl">system_prompt</span>      # הנחיית המפעיל פר-שיחה
+<span class="hl">memories</span>           # זיכרון טקסטואלי שנשלף
+<span class="hl">knowledge_chunks</span>   # קטעי ידע (RAG)
+<span class="hl">recent_messages</span>    # היסטוריית השיחה
+<span class="hl">current_message</span>    # ההודעה הנוכחית
+<span class="hl">image_base64</span>       # פריים מצלמה (אם יש)
+<span class="hl">locale</span>             # he / en
+<span class="hl">intent</span>             # סיווג השאלה</div>
+            </div>
+            <h4 class="mono">סדר בניית ה-system</h4>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell n">#</div><div class="gt-cell">בלוק</div></div>
+              <div class="gt-row"><div class="gt-cell n">1</div><div class="gt-cell">תאריך ושעה (Asia/Jerusalem)</div></div>
+              <div class="gt-row"><div class="gt-cell n">2</div><div class="gt-cell"><code>GHOST_IDENTITY</code> — האישיות המלאה</div></div>
+              <div class="gt-row"><div class="gt-cell n">3</div><div class="gt-cell">כפיית שפת תגובה</div></div>
+              <div class="gt-row"><div class="gt-cell n">4</div><div class="gt-cell">ידע עצמי + 9 יכולות</div></div>
+              <div class="gt-row"><div class="gt-cell n">5</div><div class="gt-cell">הנחיית המפעיל (אם הוגדרה)</div></div>
+              <div class="gt-row"><div class="gt-cell n">6-9</div><div class="gt-cell">זיכרונות · לוג תצפיות · ידע · לוג מעקב (רק אם אין תמונה)</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על קלטי build_prompt…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 07 — חלק 2 / messages + intent ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 2 — מערך messages וסיווג ה-intent</div>
+      <div class="meta mono">07 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך נראה מערך ההודעות, ואיך Ghost מחליט כמה לדבר?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">messages array</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">[ system: full_system ]
+[ few-shot user/assistant ]   # לפי intent או שאלת יכולות
+[ history: "[17:49] ..." ]    # חתימת שעה לכל הודעה
+[ user: text (+ image_url) ]  # ההודעה הנוכחית</div>
+            </div>
+            <p>הפונקציה <code>classify_query_intent()</code> מסווגת כל שאלה — והסוג קובע few-shot, prefix ותקרת טוקנים:</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">Intent</div><div class="gt-cell">מתי</div><div class="gt-cell n">תקרה</div></div>
+              <div class="gt-row"><div class="gt-cell k">describe</div><div class="gt-cell">"תיאור מלא", "full breakdown"</div><div class="gt-cell n">ללא</div></div>
+              <div class="gt-row"><div class="gt-cell k">open</div><div class="gt-cell">"מה אתה רואה", frame בלבד</div><div class="gt-cell n">200</div></div>
+              <div class="gt-row"><div class="gt-cell k">specific</div><div class="gt-cell">כל שאלה קונקרטית</div><div class="gt-cell n">350</div></div>
+              <div class="gt-row"><div class="gt-cell k">vague</div><div class="gt-cell">"?", "נו", emoji בלבד</div><div class="gt-cell n">—</div></div>
+            </div>
+            <div class="note"><p><code>vague</code> עושה short-circuit: Ghost מחזיר משפט הבהרה מוכן <b>בלי</b> לקרוא למודל בכלל. רוצה ש-"מה המצב?" ייחשב <code>open</code> במקום <code>specific</code>? מוסיפים אותו לרשימת דפוסי ה-open.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על סיווג ה-intent…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 08 — חלק 3 / מפת ערוצים ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 3 — מפת הערוצים</div>
+      <div class="meta mono">08 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">אילו ערוצים שולחים בקשות למודל, וכל אחד דרך מה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>כל ערוץ עובר את אותו מסלול: <span class="dim">route (כניסה) → service (בונה את ה-messages) → שער המודל (שולח)</span>.</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">ערוץ</div><div class="gt-cell">ה-service שבונה את הבקשה</div></div>
+              <div class="gt-row"><div class="gt-cell k">צ'אט</div><div class="gt-cell"><code>chat_service</code> → <code>build_prompt</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">Site Intelligence</div><div class="gt-cell"><code>build_site_intelligence_prompt</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">התראה</div><div class="gt-cell"><code>alert_service._build_messages</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">אירוע (תיוג+סיכום)</div><div class="gt-cell"><code>incident_service</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">משימה</div><div class="gt-cell"><code>task_service.evaluate_task_triggers</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">אוטומציה משפה חופשית</div><div class="gt-cell"><code>automation_service</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">זיהוי/מעקב</div><div class="gt-cell"><code>detection_service</code> + YOLO מקומי</div></div>
+              <div class="gt-row"><div class="gt-cell k">רקע (זיכרון/ידע/כותרת)</div><div class="gt-cell"><code>memory</code> · <code>visual_memory</code> · <code>knowledge</code></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על ערוץ ספציפי…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 09 — חלק 3 / תמצית הערוצים ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 3 — מה לערוך בכל ערוץ</div>
+      <div class="meta mono">09 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">לכל ערוץ — מה הנקודה היחידה שכדאי לגעת בה כדי לשנות התנהגות?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">צ'אט</div><div class="ft-desc">אורך תשובה → תקרת הטוקנים לפי intent; "יצירתיות" → temperature; דיוק/עלות → רמת הדיוק ב-UI.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Site Intelligence</div><div class="ft-desc">ערוץ נפרד — בלי זיכרון, בלי היסטוריה, בלי ה-guards. מבנה הדוח והמילים → <code>SITE_INTELLIGENCE_SYSTEM</code>.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">התראה</div><div class="ft-desc">מהיר וזול; רק התאמות בביטחון גבוה מפעילות התראה. רגישות → שער ה-confidence + הפרומפט ב-<code>alert_service</code>.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">אירוע</div><div class="ft-desc">הגדרות חומרה → פרומפט החומרה; חלון מיזוג כפילויות = 20 שניות.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">משימה</div><div class="ft-desc">בדיקת טקסט בלבד; תזמון once/interval/daily. רק ביטחון גבוה מפעיל.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">אוטומציה / זיהוי / רקע</div><div class="ft-desc">משפט חופשי → שדות; YOLO מקומי → קולאז' → ניתוח; זיכרון וכותרת רצים אחרי הצ'אט.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל מה לערוך בערוץ ההתראות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 10 — חלק 4 / טבלת-על + config ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 4 — שולחן הבקרה</div>
+      <div class="meta mono">10 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איפה כל קריאה למודל מוגדרת, ומה הפרמטרים המרכזיים?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>תמצית הקריאות המרכזיות (מודל לפי תפקיד: <span class="dim">flagship</span> = החזק, <span class="dim">מהיר</span> = הזול):</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">פונקציה</div><div class="gt-cell n">מודל</div><div class="gt-cell n">temp</div><div class="gt-cell n">tokens</div></div>
+              <div class="gt-row"><div class="gt-cell k">צ'אט (stream)</div><div class="gt-cell n">flagship</div><div class="gt-cell n">0.3</div><div class="gt-cell n">4096</div></div>
+              <div class="gt-row"><div class="gt-cell k">סריקת התראה</div><div class="gt-cell n">מהיר</div><div class="gt-cell n">0.0</div><div class="gt-cell n">220</div></div>
+              <div class="gt-row"><div class="gt-cell k">טריגר משימה</div><div class="gt-cell n">מהיר</div><div class="gt-cell n">0.0</div><div class="gt-cell n">400</div></div>
+              <div class="gt-row"><div class="gt-cell k">פענוח אוטומציה</div><div class="gt-cell n">flagship</div><div class="gt-cell n">0.0</div><div class="gt-cell n">700</div></div>
+              <div class="gt-row"><div class="gt-cell k">חומרת אירוע</div><div class="gt-cell n">מהיר</div><div class="gt-cell n">0</div><div class="gt-cell n">400</div></div>
+              <div class="gt-row"><div class="gt-cell k">סיכום אירוע</div><div class="gt-cell n">מהיר</div><div class="gt-cell n">0.2</div><div class="gt-cell n">800</div></div>
+              <div class="gt-row"><div class="gt-cell k">ניתוח קולאז' מעקב</div><div class="gt-cell n">flagship</div><div class="gt-cell n">0.1</div><div class="gt-cell n">4000</div></div>
+            </div>
+            <p>ההגדרות הגלובליות (מודל, detail, תקרות, timeouts) חיות ב-<code>config.py</code>, וניתנות לדריסה דרך משתני סביבה.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על פרמטר בקריאה למודל…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 11 — חלק 4 / reasoning + env ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 4 — מודלי reasoning ומשתני סביבה</div>
+      <div class="meta mono">11 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">למה לפעמים שינוי temperature לא משפיע, ואיך באמת קוראים למשתני הסביבה?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <h4 class="mono">מודלי reasoning מתעלמים מ-temperature</h4>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">סוג מודל</div><div class="gt-cell">מה נשלח</div></div>
+              <div class="gt-row"><div class="gt-cell k">מודל "רגיל"</div><div class="gt-cell">תקרת טוקנים + <code>temperature</code> אם הועבר</div></div>
+              <div class="gt-row"><div class="gt-cell k">מודל reasoning (flagship)</div><div class="gt-cell">תקרה מורחבת + <code>reasoning_effort="low"</code>, <b>בלי</b> temperature</div></div>
+            </div>
+            <div class="note warn"><p>שינוי temperature על מודל ה-flagship <b>לא ישפיע</b>. צריך שליטה ב-temperature? יש להשתמש במודל מסוג "רגיל".</p></div>
+            <h4 class="mono">אזהרת שמות משתני סביבה</h4>
+            <p>אין קידומת אוטומטית — שם משתנה הסביבה הוא <span class="dim">שם השדה באותיות גדולות</span> (למשל <code>VISION_MODEL</code>, לא <code>GHOST_VISION_MODEL</code>). הערות בקוד שמדברות על קידומת <code>GHOST_</code> מטעות; רק מעט שדות רגישים (כמו ה-API key וטוקני האדמין) קוראים את הקידומת בפועל.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על temperature ו-reasoning…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 12 — חלק 5 / מנגנוני הגנה ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 5 — מנגנוני הגנה על הפלט</div>
+      <div class="meta mono">12 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה מונע מ-Ghost להגיד דברים פסולים, ואיך זה עובד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>שלושה מנגנונים ב-<code>chat_service.py</code> מבטיחים ש-Ghost לא יחזיר טקסט פסול:</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">מנגנון</div><div class="gt-cell">מה תופס</div><div class="gt-cell">מה מחליף</div></div>
+              <div class="gt-row"><div class="gt-cell k">Tech-probe lockdown</div><div class="gt-cell">ניסיון לחלץ מידע טכני (איזה מודל/ספרייה)</div><div class="gt-cell">אזהרת אבטחה</div></div>
+              <div class="gt-row"><div class="gt-cell k">Vague short-circuit</div><div class="gt-cell">"?", "נו", emoji בלבד</div><div class="gt-cell">משפט הבהרה</div></div>
+              <div class="gt-row"><div class="gt-cell k">Refusal guard</div><div class="gt-cell">סירוב גנרי ("I'm sorry, I can't…", "כמודל שפה")</div><div class="gt-cell">הודעת Ghost מותגית</div></div>
+            </div>
+            <p>רשימת דפוסי הסירוב (אנגלית + עברית) ניתנת להרחבה. ההחלפה: <span class="dim">"Ghost לא הצליח לעבד את הבקשה הזו. נסה לנסח אותה אחרת, או שלח בקשה חדשה."</span> אם זוהה סירוב על בקשה עם תמונה — Ghost מריץ ניתוח חזותי מובנה במקום הסירוב.</p>
+            <div class="note warn"><p>Site Intelligence <b>עוקף</b> את ה-guards — הפלט נשמר כפי שהוזרם. זה מכוון (זו "סריקה", לא "שיחה"), אבל חשוב לדעת.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על מנגנון ה-refusal guard…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 13 — חלק 6 / ידע ומותג ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item active"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 6 — שכבת הידע והמותג</div>
+      <div class="meta mono">13 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מאיפה Ghost "יודע" איך לכתוב — הטון, הדוגמאות, הסקטורים?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>מעבר לקוד שרץ, יש שכבת <span class="dim">ידע ומותג</span> שממנה נכתב התוכן. היא חיה בסקילים:</p>
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">קובץ</div><div class="gt-cell">תפקיד</div></div>
+              <div class="gt-row"><div class="gt-cell k">ghost-use-cases</div><div class="gt-cell">התבנית המחייבת — שלושת סוגי הבדיקה + עקרונות ניסוח</div></div>
+              <div class="gt-row"><div class="gt-cell k">ghost-copywriting</div><div class="gt-cell">"הבן, לא מזהה"; איסור ניסוח גנרי ("אדם חשוד")</div></div>
+              <div class="gt-row"><div class="gt-cell k">ghost-manifesto</div><div class="gt-cell">אסור למסגר כ-Video Analytics; כללי דוגמאות</div></div>
+              <div class="gt-row"><div class="gt-cell k">ata-motag</div><div class="gt-cell">שפת המותג הוויזואלית (טוקנים, תוויות mono)</div></div>
+            </div>
+            <p>שלושת סוגי הבדיקה הם לב העקביות: <code>periodic</code> (מחזורית), <code>critical</code> (רציפה — תמיד מסתיימת ב"דווח מיידית"), ו-<code>scheduled</code> (יום/שעה). תוכן הסקטורים מאוחסן במבנה נתונים בצד הלקוח, כאשר השכבה העברית חייבת להיות מיושרת באינדקס לאנגלית.</p>
+            <div class="note"><p>ה"מוח" של מה ש-Ghost <b>אומר בזמן אמת</b> חי ב-<code>GHOST_IDENTITY</code> — אותו עיקרון מותג שמכתיב את תוכן הסקטורים מכתיב גם את תשובות Ghost.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל על שכבת המותג…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 14 — חלק 7 / עריכה מהירה ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Classified · Internal Brain</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Document</div>
+    <div class="nav-item"><span class="ix">00</span><span>מי זה Ghost</span></div>
+    <div class="nav-item"><span class="ix">01</span><span>אישיות וטון</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>מבנה ההודעה</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>הערוצים</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>שולחן הבקרה</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>מנגנוני הגנה</span></div>
+    <div class="nav-item"><span class="ix">06</span><span>ידע ומותג</span></div>
+    <div class="nav-item active"><span class="ix">07</span><span>עריכה מהירה</span></div>
+    <div class="nav-item"><span class="ix">►</span><span>מדריך למחזיק</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">חלק 7 — מדריך עריכה מהיר</div>
+      <div class="meta mono">14 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">תן לי טבלה מהירה: רוצה ש-Ghost יהיה X — מה לערוך?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="gtable">
+              <div class="gt-row head"><div class="gt-cell k">רוצה ש-Ghost…</div><div class="gt-cell">ערוך</div></div>
+              <div class="gt-row"><div class="gt-cell k">יענה קצר/ארוך יותר</div><div class="gt-cell">תקרות הטוקנים ב-<code>config.py</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">ישנה אופי/טון כללי</div><div class="gt-cell"><code>GHOST_IDENTITY</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">יחזיר כותרות מודגשות</div><div class="gt-cell">סעיף <code>Response style</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">ידבר בשפה אחרת</div><div class="gt-cell">כפיית השפה ב-<code>prompt_builder.py</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">ישנה מבנה דוח סריקת אתר</div><div class="gt-cell"><code>SITE_INTELLIGENCE_SYSTEM</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">יחליף מודל בכל המערכת</div><div class="gt-cell"><code>VISION_MODEL</code> ב-<code>config.py</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">התראות רגישות יותר</div><div class="gt-cell">שער ה-confidence + הפרומפט ב-<code>alert_service</code></div></div>
+              <div class="gt-row"><div class="gt-cell k">יזכור פחות/יותר</div><div class="gt-cell">פרומפטי חילוץ הזיכרון</div></div>
+              <div class="gt-row"><div class="gt-cell k">ישנה סקטורים באתר</div><div class="gt-cell">מבנה נתוני הסקטורים בצד הלקוח</div></div>
+            </div>
+            <div class="note"><p>תזכורת: ערוך טקסט → משנה <b>מה ואיך</b> Ghost אומר. ערוך <code>config.py</code>/פרמטרים → משנה <b>כמה מהר, כמה עולה, איזה מודל</b>. השער היחיד למודל הוא שער המודל — כל השאר רק בונים את הבקשה.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שאל "רוצה ש-Ghost יהיה…"</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 15 — PART II opener ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item active"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — פתיחה</div>
+      <div class="meta mono">15 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">אני לא מתכנת. איך אני בכלל משנה משהו ב-Ghost?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Part II · Holder's Guide</div>
+            <p class="lead">אתה מחזיק את המוח. <span class="dim">ככה מדברים אליו — בלי לכתוב שורת קוד אחת.</span></p>
+            <p>תחשוב על זה ככה: <b>Ghost הוא שומר לילה מנוסה</b> שכבר עובד אצלך. יש לו אופי, דרך דיבור, וכללים שלמד. <b>סוכן הקוד של Cursor הוא המהנדס</b> שיושב בחדר האחורי ויכול לשנות את ההוראות שבמוח של השומר — תוך דקות.</p>
+            <p>אתה לא צריך לדעת איך המהנדס עובד. אתה רק צריך להגיד לו, בשפה שלך, <b>מה אתה רוצה שישתנה בהתנהגות של השומר</b>. החלק הראשון של המסמך הזה הוא "מפת המוח" של המהנדס; החלק הזה הוא איך אתה, המחזיק, נותן לו הוראה.</p>
+            <div class="note"><p>הכלל הכי חשוב: <b>אתה אומר מה אתה רוצה שיקרה — לא איך לתכנת את זה.</b> המהנדס כבר יודע איפה לגעת. התפקיד שלך הוא לתאר את התוצאה.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">איך אני נותן הוראה לסוכן?</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 16 — איך עובדת הודעה ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item active"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — איך עובדת הודעה</div>
+      <div class="meta mono">16 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">מה חייב להיות בהודעה טובה לסוכן הקוד?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>הודעה טובה לסוכן בנויה משלוש אבני בניין פשוטות. כשהן שם — הסוכן כמעט אף פעם לא מפספס:</p>
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">1. מה אני רוצה שישתנה</div><div class="ft-desc">במשפט אחד, בשפה שלך. "אני רוצה ש-Ghost יענה קצר יותר בצ'אט."</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">2. למה / מתי</div><div class="ft-desc">ההקשר שעוזר לסוכן לבחור נכון. "התשובות ארוכות מדי ולוקח לי זמן לקרוא."</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">3. איך אני רוצה לבדוק שזה עבד</div><div class="ft-desc">התוצאה שתשכנע אותך. "אחרי השינוי, שאלה רגילה בצ'אט תיענה ב-2-3 משפטים."</div></div></li>
+            </ul>
+            <div class="note"><p>אנלוגיה: זה כמו לבקש משיפוצניק "אני רוצה שהמטבח יהיה מואר יותר" — ולא "תחבר כבל 2.5 מ"מ למפסק". אתה מתאר את התוצאה; הוא יודע את הדרך.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">מה הופך הודעה לטובה?</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 17 — אנטומיה של הודעה ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item active"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — אנטומיה של הודעה מנצחת</div>
+      <div class="meta mono">17 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">תן לי תבנית מוכנה שאני פשוט ממלא.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>העתק, מלא את הסוגריים, שלח לסוכן בצ'אט של Cursor בתוך הפרויקט:</p>
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">message template</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">אני רוצה ש-Ghost <span class="hl">[מה ישתנה — באופי / בתשובות / בהתראות]</span>.
+
+הסיבה: <span class="hl">[למה — מה מפריע לי היום]</span>.
+
+אחרי השינוי, ככה אני רוצה לבדוק שזה עבד:
+<span class="hl">[דוגמה מוחשית של תוצאה שאראה במסך]</span>.
+
+לפני שאתה משנה — תסביר לי במשפט מה אתה
+הולך לעשות, ואל תיגע בשום דבר אחר.</div>
+            </div>
+            <h4 class="mono">דוגמה מלאה</h4>
+            <p><b>אתה כותב:</b> "אני רוצה ש-Ghost ידבר בטון יותר חם וידידותי בצ'אט, פחות יבש. הסיבה: זה מרגיש קר ללקוחות. אחרי השינוי, אם אשאל 'מה קורה בשער?' התשובה תהיה אדיבה ולא מבצעית-חדה. תסביר לי קודם מה תעשה."</p>
+            <p><b>מה תראה:</b> הסוכן יסביר שהוא נוגע בקטע האישיות, יבצע, ותגובות הצ'אט יישמעו חמות יותר — בלי לשבור שום יכולת אחרת.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תן לי את התבנית…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 18 — דוגמאות 1-2 ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item active"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — דוגמאות מוחשיות (1-2)</div>
+      <div class="meta mono">18 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">תן דוגמאות אמיתיות: מה לכתוב, מה קורה ברקע, מה אראה.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <h4 class="mono">דוגמה 1 — תשובות קצרות יותר</h4>
+            <div class="chips">
+              <div class="chip"><div class="c-t">אתה כותב</div><div class="c-d">"אני רוצה ש-Ghost יענה קצר יותר בצ'אט — 2-3 משפטים לשאלה רגילה."</div></div>
+              <div class="chip"><div class="c-t">מה קורה ברקע</div><div class="c-d">הסוכן מקטין את תקרת אורך התשובה ומחדד את כלל ה"ענה רק על מה שנשאל".</div></div>
+              <div class="chip" style="grid-column:1/-1;"><div class="c-t">מה תראה</div><div class="c-d">שאלה כמו "מה קורה בשער?" תיענה בקצרה ולעניין, בלי פסקאות ארוכות.</div></div>
+            </div>
+            <h4 class="mono">דוגמה 2 — אופי / טון אחר</h4>
+            <div class="chips">
+              <div class="chip"><div class="c-t">אתה כותב</div><div class="c-d">"אני רוצה ש-Ghost יישמע סמכותי וקצר כמו קצין מבצעים, לא ידידותי."</div></div>
+              <div class="chip"><div class="c-t">מה קורה ברקע</div><div class="c-d">הסוכן מעדכן את קטע האישיות שמגדיר את הפרסונה והטון.</div></div>
+              <div class="chip" style="grid-column:1/-1;"><div class="c-t">מה תראה</div><div class="c-d">מאותו רגע כל תשובה תישמע חדה ומבצעית — בכל שיחה במערכת.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תן עוד דוגמה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 19 — דוגמאות 3-4 ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item active"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — דוגמאות מוחשיות (3-4)</div>
+      <div class="meta mono">19 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">ומה לגבי התראות והעלות?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <h4 class="mono">דוגמה 3 — התראות רגישות יותר</h4>
+            <div class="chips">
+              <div class="chip"><div class="c-t">אתה כותב</div><div class="c-d">"אני רוצה שההתראות יקפצו גם כש-Ghost לא בטוח לגמרי — עדיף שיתריע יותר מדי מאשר לפספס."</div></div>
+              <div class="chip"><div class="c-t">מה קורה ברקע</div><div class="c-d">הסוכן מרכך את ה"שער" שמחייב ביטחון גבוה כדי שהתראה תופעל.</div></div>
+              <div class="chip" style="grid-column:1/-1;"><div class="c-t">מה תראה</div><div class="c-d">יותר התראות בזמן אמת (וגם יותר התראות שווא — זה הטרייד-אוף).</div></div>
+            </div>
+            <h4 class="mono">דוגמה 4 — להוזיל / להאיץ</h4>
+            <div class="chips">
+              <div class="chip"><div class="c-t">אתה כותב</div><div class="c-d">"השיחה בצ'אט יקרה לי. אני מוכן לקצת פחות דיוק תמורת מודל זול ומהיר יותר."</div></div>
+              <div class="chip"><div class="c-t">מה קורה ברקע</div><div class="c-d">הסוכן מחליף את ברירת המחדל של המודל למודל קל יותר בהגדרות.</div></div>
+              <div class="chip" style="grid-column:1/-1;"><div class="c-t">מה תראה</div><div class="c-d">תשובות מהירות וזולות יותר; תיאורים מעט פחות עשירים.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תן דוגמה על עלות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 20 — בדיקה ואישור ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item active"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — בדיקה, אישור ומה לא לעשות</div>
+      <div class="meta mono">20 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">איך אני מוודא שלא נשבר כלום, ומה עדיף שלא לבקש?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <h4 class="mono">תמיד כדאי לבקש</h4>
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">"תסביר לי קודם מה תשנה"</div><div class="ft-desc">לפני הביצוע — שתבין במשפט אחד מה עומד להשתנות.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">"תיגע רק בזה, אל תשנה כלום אחר"</div><div class="ft-desc">ממקד את הסוכן ומונע שינויים לא רצויים.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">"תראה לי דוגמה לתוצאה אחרי"</div><div class="ft-desc">אישור מוחשי שהשינוי עשה את מה שרצית.</div></div></li>
+            </ul>
+            <h4 class="mono">עדיף להיזהר</h4>
+            <div class="note warn"><p>אל תבקש "תמחק" או "תנקה הכל" בלי לוודא מה זה כולל. אל תשתף מפתחות/סיסמאות בצ'אט. אם זה נוגע לעלייה לאוויר (deploy) — בקש מהסוכן לעצור ולהסביר את הסיכון לפני שהוא מבצע.</p></div>
+            <p>בכל ספק — בקש מהסוכן <b>"תעצור, אל תבצע, רק תכין לי תוכנית"</b>. ככה אתה רואה הכל לפני שמשהו זז.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">איך אני מאשר בבטחה?</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PAGE 21 — closer ====================== -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost // BRAIN<span class="sub">Part II · Holder's Guide</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Holder's Guide</div>
+    <div class="nav-item"><span class="ix">A</span><span>אתה מחזיק את המוח</span></div>
+    <div class="nav-item"><span class="ix">B</span><span>איך עובדת הודעה</span></div>
+    <div class="nav-item"><span class="ix">C</span><span>אנטומיה של הודעה</span></div>
+    <div class="nav-item"><span class="ix">D</span><span>דוגמאות 1-2</span></div>
+    <div class="nav-item"><span class="ix">E</span><span>דוגמאות 3-4</span></div>
+    <div class="nav-item"><span class="ix">F</span><span>בדיקה ואישור</span></div>
+    <div class="nav-item active"><span class="ix">G</span><span>סיכום</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>CONFIDENTIAL</b><br />EYES ONLY · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">מדריך למחזיק — סיכום</div>
+      <div class="meta mono">21 / 21</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">תן לי את זה במשפט אחד שאני זוכר.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>שני סוגי שינוי, וזה כל מה שצריך לזכור:</p>
+            <div class="stats">
+              <div class="stat"><div class="s-b">טקסט</div><div class="s-l">משנה מה ואיך Ghost אומר</div></div>
+              <div class="stat"><div class="s-b">פרמטרים</div><div class="s-l">משנה כמה מהר / כמה עולה / איזה מודל</div></div>
+              <div class="stat"><div class="s-b">תאר תוצאה</div><div class="s-l">לא קוד — מה אתה רוצה לראות</div></div>
+              <div class="stat"><div class="s-b">אשר קודם</div><div class="s-l">"תסביר ואל תיגע בשאר"</div></div>
+            </div>
+            <div class="closer">
+              <div class="big">אתה מחזיק את המוח של Ghost. כדי לשנות אותו — תאר בשפה שלך מה אתה רוצה שיקרה, ובקש מהסוכן להסביר לפני שהוא מבצע.</div>
+              <div class="small">Ghost // Internal Operating Brain — Classified · Eyes Only</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">מה אני רוצה לשנות ב-Ghost היום?</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost // Internal Operating Brain — Classified</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

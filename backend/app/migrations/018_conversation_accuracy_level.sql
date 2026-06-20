@@ -1,0 +1,11 @@
+-- Per-conversation answer accuracy level (1-4) used to pick the OpenAI chat
+-- model. A higher level maps to a stronger (and more expensive) model:
+--   1 -> gpt-4o-mini   2 -> gpt-4o   3 -> gpt-5-mini   4 -> gpt-5
+--
+-- The mapping lives in ``app/config.py::model_for_accuracy`` (level 4 resolves
+-- to ``settings.vision_model`` so the existing GHOST_VISION_MODEL override
+-- still wins). Default 4 preserves the previous behaviour where every chat ran
+-- on the flagship vision model.
+--
+-- Additive column — legacy rows default to 4 and remain valid.
+ALTER TABLE conversations ADD COLUMN accuracy_level INTEGER NOT NULL DEFAULT 4;

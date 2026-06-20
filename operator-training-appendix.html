@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — Operator Training: Visual Field Appendix</title>
+<style>
+  :root {
+    --bg-primary: #ffffff; --bg-sidebar: #f7f7f7; --bg-surface: #f0f0f0;
+    --bg-surface-hover: #e8e8e8; --bg-code: #fafafa;
+    --text-primary: #161616; --text-secondary: #5d5d5d; --text-muted: #9a9a9a;
+    --border-subtle: #e2e2e2; --accent: #161616; --accent-ink: #ffffff;
+    --alert: #c43c3c;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #ededed; color: var(--text-primary); font-family: var(--sans); -webkit-font-smoothing: antialiased; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  .page { width: 210mm; height: 297mm; margin: 0 auto; background: var(--bg-primary); display: flex; overflow: hidden; position: relative; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  .sidebar { width: 58mm; flex-shrink: 0; background: var(--bg-sidebar); border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 6px 14px; }
+  .brand img { width: 30px; height: 30px; border-radius: 9px; display: block; }
+  .brand .name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .brand .name .sub { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+  .newchat { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-secondary); font-size: 13px; background: var(--bg-primary); }
+  .newchat .plus { width: 16px; height: 16px; position: relative; opacity: 0.85; }
+  .newchat .plus::before, .newchat .plus::after { content: ""; position: absolute; background: var(--text-secondary); }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+  .nav-label { font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 14px 10px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; height: 36px; padding: 0 11px; border-radius: 11px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 16px; flex-shrink: 0; }
+  .nav-item.active { background: var(--bg-surface-hover); color: var(--text-primary); }
+  .nav-item.active .ix { color: var(--text-primary); }
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot { border-top: 1px solid var(--border-subtle); padding: 12px 10px 2px; font-size: 10.5px; color: var(--text-muted); line-height: 1.5; }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border-bottom: 1px solid var(--border-subtle); }
+  .topbar .title { font-size: 14px; font-weight: 600; }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread { flex: 1; overflow: hidden; padding: 18px 22px 6px; display: flex; flex-direction: column; }
+  .wrap { width: 100%; max-width: 168mm; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble { max-width: 80%; background: var(--bg-surface); border-radius: 18px; padding: 9px 15px; font-size: 13px; line-height: 1.5; }
+
+  .msg-ai { display: flex; gap: 12px; }
+  .msg-ai .av { width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; overflow: hidden; margin-top: 2px; }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body .kicker { font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; font-family: var(--mono); }
+  .msg-ai .body .intro { font-size: 12px; line-height: 1.55; color: var(--text-primary); }
+  .msg-ai .body .intro b { font-weight: 600; }
+
+  /* screenshot figure with instruction layer */
+  .fig { margin-top: 10px; position: relative; border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .fig img { width: 100%; display: block; }
+  .marker { position: absolute; width: 19px; height: 19px; margin: -9.5px 0 0 -9.5px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--mono); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px rgba(255,255,255,0.95), 0 0 0 3.5px rgba(22,22,22,0.35), 0 1px 4px rgba(0,0,0,0.4); }
+  .marker.red { background: var(--alert); box-shadow: 0 0 0 2px rgba(255,255,255,0.95), 0 0 0 3.5px rgba(196,60,60,0.4), 0 1px 4px rgba(0,0,0,0.4); }
+  .figbar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 4px 10px; background: linear-gradient(to top, rgba(22,22,22,0.55), transparent); }
+  .figbar span { font-family: var(--mono); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.9); }
+  .maskbox { position: absolute; background: rgba(120,120,120,0.92); border: 1px solid rgba(255,255,255,0.6); display: flex; align-items: flex-end; justify-content: center; }
+  .maskbox span { font-family: var(--mono); font-size: 6.5px; letter-spacing: 0.14em; color: rgba(255,255,255,0.85); padding-bottom: 3px; text-transform: uppercase; }
+
+  /* step legend */
+  .legend { margin-top: 10px; display: flex; flex-direction: column; }
+  .legend .step { display: flex; gap: 10px; align-items: flex-start; padding: 6.5px 0; border-bottom: 1px solid var(--border-subtle); }
+  .legend .step:last-child { border-bottom: none; }
+  .legend .num { flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--mono); font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .legend .num.red { background: var(--alert); }
+  .legend .tx { min-width: 0; font-size: 11px; line-height: 1.45; }
+  .legend .tx b { font-weight: 600; color: var(--text-primary); }
+  .legend .tx span { color: var(--text-secondary); }
+
+  .composer-wrap { padding: 6px 22px 14px; }
+  .composer { max-width: 168mm; margin: 0 auto; background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 9px 12px 9px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .composer .ph { flex: 1; font-size: 12.5px; color: var(--text-muted); }
+  .composer .send { width: 27px; height: 27px; border-radius: 50%; background: var(--accent); flex-shrink: 0; position: relative; }
+  .composer .send::after { content: ""; position: absolute; left: 50%; top: 52%; width: 7px; height: 7px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink); transform: translate(-50%,-50%) rotate(-45deg); }
+  .disclaimer { max-width: 168mm; margin: 7px auto 0; text-align: center; font-size: 10px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ APPENDIX PAGE 01 — How to Read This Appendix ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item active"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">How to Read This Appendix</div>
+      <div class="meta mono">A-01 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Show me the console exactly as I will see it.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">This appendix is the visual companion to the Operator Training Program. Every page shows a <b>real, unedited screenshot</b> of the Ghost console, with numbered markers placed on the actual controls. The legend under each image tells you three things per marker: what to do, what it means, and what happens next. The console runs Hebrew, right-to-left — the conversations sidebar sits on the right, the chat fills the rest.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/01-console-home.png" alt="How to Read This Appendix" />
+
+        <span class="marker" style="left:89%;top:2.9%;">1</span>
+        <span class="marker" style="left:82.4%;top:2.9%;">2</span>
+        <span class="marker" style="left:89.3%;top:8.5%;">3</span>
+        <span class="marker" style="left:89.5%;top:30%;">4</span>
+        <span class="marker" style="left:92%;top:62%;">5</span>
+        <span class="marker" style="left:86%;top:96.8%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The operator clock</b> — <span>Local time with red seconds — your reference whenever you log an event time.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>New conversation (+)</b> — <span>One press opens a fresh conversation — the basic unit of work in Ghost.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>View tabs: צ'אט / ניהול אירועים</b> — <span>Chat is where you question cameras; Incidents is the case board. A counter badge shows cases waiting.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The organization tree</b> — <span>Areas contain camera groups, groups contain conversations — מפעל מגם ציפורי holds two groups here.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Free conversations</b> — <span>Anything not yet filed into an area. Keep this list short — file what you keep.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>The footer strip</b> — <span>Active user, theme toggle, Settings and sign-out — identity and console controls in one row.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Every page: one real screen, one skill…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 02 — Secure Access ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item active"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Secure Access</div>
+      <div class="meta mono">A-02 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What does the door to the console look like?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The Secure Access screen is the only door into the console. It is always dark, always English — a deliberate checkpoint before the operational interface.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/00-secure-access.png" alt="Secure Access" />
+
+        <span class="marker" style="left:50%;top:39%;">1</span>
+        <span class="marker" style="left:50%;top:44.5%;">2</span>
+        <span class="marker" style="left:58.3%;top:44.5%;">3</span>
+        <span class="marker" style="left:50%;top:53%;">4</span>
+        <span class="marker" style="left:50%;top:88%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Type your agent name in “Agent Access”</b> — <span>Your operator identity — every action you take is attributed to it.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Paste your key into “Ghost Key”</b> — <span>The credential itself. Never type it while anyone can see your screen.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The eye toggle</b> — <span>Reveals the key while you paste, hides it again with one press. Default: hidden.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>Press “Sign in”</b> — <span>Valid credentials hand you straight into the console. A quick-login link skips this screen entirely.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Briefs & Documents</b> — <span>Public PDFs offered at the door — these are for visitors; your work starts after sign-in.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Sign in with agent credentials…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 03 — Creating a Conversation ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item active"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Creating a Conversation</div>
+      <div class="meta mono">A-03 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">I pressed + . What am I looking at?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">One press on + and you are standing in a fresh conversation. Nothing is configured yet — no camera, no rules — and that emptiness is the point: each conversation grows into one camera and one concern.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/02-new-conversation.png" alt="Creating a Conversation" />
+
+        <span class="marker" style="left:82.4%;top:2.9%;">1</span>
+        <span class="marker" style="left:89.5%;top:50.5%;">2</span>
+        <span class="marker" style="left:39.4%;top:32%;">3</span>
+        <span class="marker" style="left:40%;top:93.3%;">4</span>
+        <span class="marker" style="left:14.2%;top:93.3%;">5</span>
+        <span class="marker" style="left:5.8%;top:2.6%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The + you just pressed</b> — <span>Creates and selects the conversation in one motion.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>The new row appears</b> — <span>Stamped with date and time (שיחה חדשה 26-6-9 21:46) and marked עכשיו — auto-naming will rename it after the first exchange.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>GHOST // SESSION — איך אפשר לעזור?</b> — <span>The empty state. Ghost is ready; the thread fills as you ask.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The message box, already focused</b> — <span>Type and press Enter. Shift+Enter inserts a line break.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Camera and voice controls</b> — <span>The live toggle and microphone sit beside the box — Parts IV and IX of the booklet.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>Header tools</b> — <span>System prompt, alert mode, memory, site scan and language — one icon each, covered page by page in this appendix.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">כתוב הודעה למטה כדי להתחיל…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 04 — The Composer, Armed ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item active"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Composer, Armed</div>
+      <div class="meta mono">A-04 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What changes the moment I type?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">A question is typed and everything around the box reports readiness: the send arrow is live, and because voice command is enabled, a listening strip explains how to fire the message hands-free.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/03-composer-typed.png" alt="The Composer, Armed" />
+
+        <span class="marker" style="left:40%;top:92.8%;">1</span>
+        <span class="marker" style="left:19%;top:93.2%;">2</span>
+        <span class="marker" style="left:21%;top:93.2%;">3</span>
+        <span class="marker" style="left:47%;top:88.6%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The question, in plain language</b> — <span>“מה חשוב לכלול בתדריך משמרת ללילה שקט במתקן לוגיסטי?” — operational intent, not object lists.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Send arrow — armed</b> — <span>Dark and active the moment the box holds text. Enter does the same.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Microphone — listening</b> — <span>Voice command is on: speech becomes text in the box.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The voice strip</b> — <span>מאזין… אמור “ביצוע” כדי לשלוח — say the send phrase and the message fires hands-free.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">מה חשוב לכלול בתדריך משמרת לילה?…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 05 — Reading the Answer ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item active"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Reading the Answer</div>
+      <div class="meta mono">A-05 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">The answer arrived. What should I notice?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Ghost answers in a structured brief — and the console quietly does one more thing: it reads the exchange and renames the conversation to match its content.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/04-thread-answer.png" alt="Reading the Answer" />
+
+        <span class="marker" style="left:33%;top:11.2%;">1</span>
+        <span class="marker" style="left:45%;top:45%;">2</span>
+        <span class="marker" style="left:71.5%;top:3%;">3</span>
+        <span class="marker" style="left:91%;top:50.5%;">4</span>
+        <span class="marker" style="left:40%;top:97.6%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Your question, right-aligned</b> — <span>User messages sit in bubbles; hover one to reveal its exact timestamp and a copy button.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Ghost's answer, streamed</b> — <span>A full operational checklist for the night-shift briefing — note the structure: opening read, then itemized points.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The title changed itself</b> — <span>Auto-naming renamed the conversation to תדריך משמרת לילה from the content.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The sidebar row followed</b> — <span>Same new name in the list — rename manually (pencil) and the automatic naming locks out.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>The disclaimer line</b> — <span>“Ghost עלול לטעות” — the standing reminder that you are the verifying human.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask a follow-up…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 06 — The System Prompt Editor ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item active"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The System Prompt Editor</div>
+      <div class="meta mono">A-06 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Where do I write standing instructions?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The sliders icon in the header opens the System Prompt — the standing order this conversation obeys in every answer. Here a real watch order for a northern loading dock is being written.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/05-system-prompt.png" alt="The System Prompt Editor" />
+
+        <span class="marker" style="left:61.5%;top:32%;">1</span>
+        <span class="marker" style="left:50%;top:43%;">2</span>
+        <span class="marker" style="left:38.5%;top:61.8%;">3</span>
+        <span class="marker" style="left:38.7%;top:67.4%;">4</span>
+        <span class="marker" style="left:43%;top:67.4%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The editor opens as a focused modal</b> — <span>Everything else dims — standing orders deserve full attention.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Numbered priorities, concrete conditions</b> — <span>“(1) נתיב החירום חייב להישאר פנוי…” — ordered, observable, and a fixed answer format at the end.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Character count</b> — <span>186 תווים — short enough to stay sharp. A page-long prompt is a sign you need two conversations.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>שמירה (Save)</b> — <span>The order takes effect on the very next message and every one after it.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>ביטול (Cancel)</b> — <span>Discards the edit; the previous prompt stays in force.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Edit the standing orders…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 07 — The Camera Selector ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Camera Selector</div>
+      <div class="meta mono">A-07 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How do I bind a real camera to this conversation?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Flip the live toggle (or press הוסף מצלמה in the header) and GHOST // CAMERAS lists every camera this console can reach — here, a MacBook camera and a paired iPhone.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/08-camera-selector.png" alt="The Camera Selector" />
+
+        <span class="marker" style="left:50%;top:48%;">1</span>
+        <span class="marker" style="left:50%;top:53.2%;">2</span>
+        <span class="marker" style="left:56.8%;top:60.3%;">3</span>
+        <span class="marker" style="left:42.8%;top:60.3%;">4</span>
+        <span class="marker" style="left:41.2%;top:39.8%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Camera row — click to select</b> — <span>Multi-select: a gate conversation often pairs the approach view with the barrier view.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>A second device</b> — <span>Phones, capture cards and fixed cameras all appear the same way — pick what covers the scene.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שמור Setup</b> — <span>Binds the selection to this conversation permanently and starts streaming. Alerts and broadcasts use this saved set.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>הפעל לייב</b> — <span>Streams for this session only — nothing is saved. For a conversation you keep, always save.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Close (×)</b> — <span>The only way out — the backdrop deliberately does not dismiss a camera decision.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בחר מצלמות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 08 — The Live Stage ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Live Stage</div>
+      <div class="meta mono">A-08 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">The camera is on. What are all these tile controls?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">With a saved setup the live stage renders above the composer. The default view is the calm grayscale intel view; Ghost silhouettes people it recognizes in the scene as an orientation aid.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/09-live-stage.png" alt="The Live Stage" />
+        <span class="maskbox" style="left:31%;top:41%;width:15%;height:21%;"><span>IDENTITY PROTECTED</span></span>
+        <span class="marker" style="left:39%;top:64%;">1</span>
+        <span class="marker" style="left:59.7%;top:44.1%;">2</span>
+        <span class="marker" style="left:59.7%;top:47.5%;">3</span>
+        <span class="marker" style="left:18.8%;top:84.2%;">4</span>
+        <span class="marker" style="left:57%;top:44.5%;">5</span>
+        <span class="marker" style="left:53.5%;top:8%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The live tile — intel view</b> — <span>Grayscale by design for long watches; the teal silhouette is Ghost marking a person in the scene.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Record</b> — <span>Captures the stream into a downloadable clip with a running timer — your raw-footage evidence layer.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Enhance — מצב צבע + זום/PTZ</b> — <span>Switches to full color and unlocks wheel-zoom (up to 8×) and drag-pan for reading details.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>Audio listen</b> — <span>Opens the camera's microphone channel if it has one. Default muted — open deliberately, close when verified.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>REC indicator & camera label</b> — <span>Every tile is labeled with its device name; the red dot confirms an active recording.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>Header camera chip</b> — <span>מצלמת ה-MacBook Air with × to detach, plus הוסף מצלמה to grow the setup.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הגדל את התצוגה החיה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 09 — Asking With Live Cameras ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Asking With Live Cameras</div>
+      <div class="meta mono">A-09 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">I asked while live was on. What did Ghost actually see?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Every live question carries evidence. Ghost samples three frames about 0.8 seconds apart, masks faces, and pins the collage to its answer — the answer and what it saw, side by side, forever.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/10-live-answer-frame.png" alt="Asking With Live Cameras" />
+
+        <span class="marker" style="left:29%;top:49.5%;">1</span>
+        <span class="marker" style="left:38%;top:63.5%;">2</span>
+        <span class="marker" style="left:23%;top:70%;">3</span>
+        <span class="marker" style="left:44%;top:76.5%;">4</span>
+        <span class="marker" style="left:40.5%;top:84.7%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The live question</b> — <span>“תאר מה אתה רואה כרגע וציין כל דבר שדורש תשומת מפעיל” — present tense, because live is on.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>The sampled-frame collage</b> — <span>Three spaced frames reveal motion, not just a frozen instant. Click it for the full-size view.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Timestamp watermark</b> — <span>2026-06-09 21:56 burned into the frame — evidence carries its own time.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>Ghost's read</b> — <span>“שקט… לא נדרשת תשומת מפעיל כרגע” — a decision-grade answer, not an inventory.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>הצג שידור חי — collapsed stage</b> — <span>The live stage folds to a slim bar when you need thread space; one click restores it.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תאר מה אתה רואה כרגע…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 10 — The Frame Lightbox ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Frame Lightbox</div>
+      <div class="meta mono">A-10 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Can I inspect the exact frames at full size?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Click any sampled frame and it opens full-screen. This is the evidence view — what Ghost analyzed, at inspection size, with the privacy layer visibly applied.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/11-frame-lightbox.png" alt="The Frame Lightbox" />
+
+        <span class="marker" style="left:50%;top:48%;">1</span>
+        <span class="marker" style="left:6.5%;top:63.5%;">2</span>
+        <span class="marker" style="left:2%;top:3.2%;">3</span>
+        <span class="marker" style="left:50%;top:67%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Three frames, full size</b> — <span>Spaced sampling: compare the frames to read motion — what moved, what stayed.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Timestamp watermark</b> — <span>Burned into the lower corner of the collage.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Close (×) — or press Esc</b> — <span>Returns to the thread exactly where you were.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>Face masking, visible</b> — <span>The blurred patch at the bottom is the privacy layer — identity is masked before analysis, by design.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Esc closes the preview…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 11 — Site Intelligence ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Site Intelligence</div>
+      <div class="meta mono">A-11 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What does the scan button produce?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">One press on the scan-eye icon and Ghost surveys the whole scene — not an answer to a question, but a structured read of the site: layout, activity, and what deserves operator attention.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/12-site-intelligence.png" alt="Site Intelligence" />
+
+        <span class="marker" style="left:8.4%;top:2.8%;">1</span>
+        <span class="marker" style="left:26.5%;top:19%;">2</span>
+        <span class="marker" style="left:38%;top:50%;">3</span>
+        <span class="marker" style="left:40%;top:86%;">4</span>
+        <span class="marker" style="left:40%;top:91.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The scan-eye button</b> — <span>Lives in the header. Disabled with a hint when no camera is set up — the scan needs eyes.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>“Site Intelligence Report — סריקת סביבה”</b> — <span>The scan lands in the thread as a labeled exchange — quotable and permanent like any answer.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The surveyed frame</b> — <span>Sampled at scan time, faces masked, time-stamped — the report's evidence base.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The report itself</b> — <span>דוח מבוסס על ניתוח פריים בודד — layout, storage, lighting, risks. Run one on every new camera.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>קפוץ להודעה האחרונה</b> — <span>Appears whenever you scroll up — one click back to the live end of the thread.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">סריקת סביבה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 12 — The Memory Panel ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item active"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Memory Panel</div>
+      <div class="meta mono">A-12 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Where do I see what this conversation remembers?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The brain icon opens the memory panel — three layers of what this conversation has accumulated, each one inspectable and prunable.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/13-memory-panel.png" alt="The Memory Panel" />
+
+        <span class="marker" style="left:15%;top:6.9%;">1</span>
+        <span class="marker" style="left:9%;top:6.9%;">2</span>
+        <span class="marker" style="left:3%;top:6.9%;">3</span>
+        <span class="marker" style="left:2.5%;top:11.9%;">4</span>
+        <span class="marker" style="left:7%;top:16%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>טרקינג (Tracking)</b> — <span>Continuous activity logging — people, vehicles, equipment moving through the scene, filterable by type and time.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>תצפיות (Observations)</b> — <span>Visual memory: entities and scene facts Ghost noticed across its samples.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>עובדות (Facts)</b> — <span>Standing knowledge that shapes future answers — each fact carries a delete control. Prune after every site change.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The tracking toggle</b> — <span>Off by default. Arm it on posts where an activity diary earns its cost.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Batch controls</b> — <span>0 / 8 — how detections accumulate before flushing. שלח עכשיו forces an immediate flush.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">פתח את פאנל הזיכרון…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 13 — The Alert Panel ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item active"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Alert Panel</div>
+      <div class="meta mono">A-13 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Open the shield. What am I configuring?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The shield icon opens the alert panel — where a conversation learns to watch itself. Everything here is disarmed; the next two pages arm it.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/06-alert-panel.png" alt="The Alert Panel" />
+
+        <span class="marker red" style="left:3.7%;top:12%;">1</span>
+        <span class="marker red" style="left:12%;top:21.5%;">2</span>
+        <span class="marker red" style="left:13%;top:35.5%;">3</span>
+        <span class="marker red" style="left:2.5%;top:35.5%;">4</span>
+        <span class="marker red" style="left:12%;top:46.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>מצב התראה כבוי — the arming toggle</b> — <span>Off. The conversation answers questions but keeps no watch.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>The camera prerequisite warning</b> — <span>יש להגדיר מצלמה לשיחה — arming requires a saved camera. The inline link opens the selector.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>The rule box</b> — <span>A real rule mid-typing: “אדם מרים יד גבוה מעל הראש” — observable posture, one deviation, plain words.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>Add (+)</b> — <span>Press, or hit Enter, to add the rule to this conversation's watch list.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>אין שורות התראה — empty list</b> — <span>No rules yet. A conversation can hold several, each toggled independently.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">תאר מצב, אובייקט או אירוע…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 14 — A Rule, Added & Active ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item active"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">A Rule, Added & Active</div>
+      <div class="meta mono">A-14 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">I added the rule. How do I know it counts?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The rule is now on the books. Note what changed: a counter, a live toggle on the rule itself, and a cleared input ready for the next rule.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/07-alert-rule-added.png" alt="A Rule, Added & Active" />
+
+        <span class="marker red" style="left:11.5%;top:41.5%;">1</span>
+        <span class="marker red" style="left:20.5%;top:42.5%;">2</span>
+        <span class="marker red" style="left:5.5%;top:31.5%;">3</span>
+        <span class="marker red" style="left:12%;top:34%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>The rule row</b> — <span>“אדם מרים יד גבוה מעל הראש” — exactly as you wrote it. Hover reveals a delete control.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>The green per-rule toggle</b> — <span>Active. Green is reserved for live/connected states — this rule will be scanned for once armed.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>שורות התראה: 1</b> — <span>The counter confirms one active rule on this post.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>The input, cleared</b> — <span>Ready for the next rule — one deviation per rule, several rules per post.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">הוסף שורת התראה נוספת…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 15 — The Armed Watch ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item active"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Armed Watch</div>
+      <div class="meta mono">A-15 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Alert mode is on. Read me the status card.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Armed. The toggle is green, the status card is live, and the conversation's sidebar row now carries a red מצב התראה badge so every operator can see this post watches itself.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/14-alert-armed.png" alt="The Armed Watch" />
+
+        <span class="marker red" style="left:3.7%;top:12.5%;">1</span>
+        <span class="marker red" style="left:9%;top:28.5%;">2</span>
+        <span class="marker red" style="left:9%;top:33.5%;">3</span>
+        <span class="marker red" style="left:9%;top:40.5%;">4</span>
+        <span class="marker red" style="left:9%;top:47.5%;">5</span>
+        <span class="marker red" style="left:92.5%;top:51.7%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>מצב התראה פעיל</b> — <span>The watch is live: Ghost continuously scans the saved cameras against your rules.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>סטטוס מערכת — the heartbeat card</b> — <span>Read it at every check-in; an armed watch you never verify is a story you tell yourself.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>מצלמה: סורק…</b> — <span>Frames are flowing from the MacBook camera into the scan loop.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>ערוץ התראות פעיל (green)</b> — <span>The push channel is connected — a firing alert reaches this console instantly.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>סריקה אחרונה: כעת</b> — <span>The freshness clock. If it stops advancing: disarm, fix, re-arm.</span></div></div>
+            <div class="step"><span class="num red">6</span><div class="tx"><b>The red sidebar badge</b> — <span>מצב התראה on the row — armed state is visible from across the room.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בדיקת חיבור…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 16 — Conversation Row Actions ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item active"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Conversation Row Actions</div>
+      <div class="meta mono">A-16 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What hides behind a conversation row?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Hover any conversation row and its timestamp gives way to an action bar — four small controls that keep a fifty-conversation site navigable.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/17-row-actions.png" alt="Conversation Row Actions" />
+
+        <span class="marker" style="left:84.5%;top:50%;">1</span>
+        <span class="marker" style="left:83%;top:50%;">2</span>
+        <span class="marker" style="left:81.5%;top:50%;">3</span>
+        <span class="marker" style="left:80%;top:50%;">4</span>
+        <span class="marker" style="left:86.2%;top:50%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>שייך לאזור (folder)</b> — <span>Opens the filing menu — next page — to place this conversation in an area or group.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>שיום אוטומטי (sparkles)</b> — <span>Per-conversation override of automatic naming, on top of the global switch in Settings.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שנה שם (pencil)</b> — <span>Inline rename — or double-click the title. A manual name locks auto-naming out.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מחק שיחה (trash)</b> — <span>Immediate and permanent — no confirmation, no undo. Deliberate, never casual.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Drag handle</b> — <span>Grab to reorder, or drop the row into any area or group in the tree.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">רחף מעל שורת שיחה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 17 — The Filing Menu ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item active"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Filing Menu</div>
+      <div class="meta mono">A-17 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">I pressed the folder. Where can this conversation go?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The בחר יעד popover lists every destination: existing areas and their groups, direct-in-area placement, brand-new containers, or back to the free list.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/18-assign-menu.png" alt="The Filing Menu" />
+
+        <span class="marker" style="left:91.5%;top:36.5%;">1</span>
+        <span class="marker" style="left:86%;top:36.8%;">2</span>
+        <span class="marker" style="left:88%;top:41.5%;">3</span>
+        <span class="marker" style="left:87.5%;top:46.5%;">4</span>
+        <span class="marker" style="left:86.5%;top:50.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The area — מפעל מגם ציפורי</b> — <span>Hover an area to unfold its placement options.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>ישירות באזור</b> — <span>Files the conversation directly under the area, outside any group.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The groups — חנייה / מפעל גומי</b> — <span>One click files the conversation into that camera group.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>קבוצה חדשה</b> — <span>Creates a group and files the conversation into it in a single motion.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>ללא שיוך</b> — <span>Returns the conversation to the free list. Esc or an outside click closes the menu.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">בחר יעד…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 18 — Broadcast: The Prerequisite ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item active"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Broadcast: The Prerequisite</div>
+      <div class="meta mono">A-18 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">I opened an area chat and the box is locked. Why?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Broadcast sends one question to every saved camera in a scope. This area resolved zero cameras — so the console refuses to pretend, and tells you exactly what is missing.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/16-broadcast-empty.png" alt="Broadcast: The Prerequisite" />
+
+        <span class="marker" style="left:73.5%;top:2.6%;">1</span>
+        <span class="marker" style="left:71.5%;top:4.2%;">2</span>
+        <span class="marker" style="left:39.5%;top:27%;">3</span>
+        <span class="marker" style="left:39.5%;top:93.2%;">4</span>
+        <span class="marker" style="left:76.6%;top:7.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Scope header — מפעל מגם ציפורי · אזור</b> — <span>You are talking to a zone now, not a single camera.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>0 מצלמות בשידור</b> — <span>The resolver counted saved cameras across every conversation in the area — and found none.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The explanation</b> — <span>צרף מצלמות לשיחות שבאזור — broadcast rides on each conversation's saved setup.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The locked composer</b> — <span>Disabled with the reason in the placeholder. No cameras, no broadcast — by design.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>Close (×)</b> — <span>Back to normal chat. Fix the setups, then return — next page.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">אין מצלמות מקושרות בשידור…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 19 — Broadcast, Live ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item active"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Broadcast, Live</div>
+      <div class="meta mono">A-19 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Now the area has a camera. What does a sweep look like?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">One question, every camera in the zone, one labeled answer per camera. This is the end-of-shift sweep from the booklet, running for real.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/19-broadcast-live.png" alt="Broadcast, Live" />
+
+        <span class="marker" style="left:71%;top:2.8%;">1</span>
+        <span class="marker" style="left:29%;top:10.5%;">2</span>
+        <span class="marker" style="left:39%;top:23.5%;">3</span>
+        <span class="marker" style="left:51.5%;top:17.5%;">4</span>
+        <span class="marker" style="left:33%;top:37.5%;">5</span>
+        <span class="marker" style="left:91.5%;top:49%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>1 מצלמות בשידור</b> — <span>The scope now resolves the saved camera of the conversation filed into this area.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>The sweep question</b> — <span>“סריקת סוף משמרת: דווח מה קורה בשטח שלך…” — asked once, delivered to every camera.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Per-camera answer</b> — <span>Labeled MacBook Air (0000:0001) — each camera answers in its own name with its own sampled frames.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The evidence collage</b> — <span>Same three-frame sampling as a normal live question, per camera.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>The verdict</b> — <span>שקט… לא נדרשת תשומת מפעיל — read broadcasts by exception and drill into what flags.</span></div></div>
+            <div class="step"><span class="num">6</span><div class="tx"><b>The filed conversation</b> — <span>תדריך משמרת ללילה שקט now sits inside the area — that filing is what the broadcast resolved.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">שלח הודעה אחת לכל המצלמות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 20 — The Incident Board ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item active"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Incident Board</div>
+      <div class="meta mono">A-20 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Switch to ניהול אירועים. What am I triaging?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The Incidents tab turns alert noise into casework: real fired alerts — אדם מרים יד למעלה — merged into incidents, graded, and flowing across columns toward closure.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/20-incident-board.png" alt="The Incident Board" />
+
+        <span class="marker red" style="left:68.5%;top:22%;">1</span>
+        <span class="marker red" style="left:47.5%;top:22%;">2</span>
+        <span class="marker red" style="left:68.5%;top:40%;">3</span>
+        <span class="marker red" style="left:35%;top:14%;">4</span>
+        <span class="marker red" style="left:22.5%;top:2.6%;">5</span>
+        <span class="marker red" style="left:79.8%;top:7.3%;">6</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>אירועים חדשים — the triage column</b> — <span>Three fresh cases, each with the alert frame, severity grade (נמוך) and the AI's one-line read.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>אירועים בטיפול / בבירור</b> — <span>Cases an operator owns. One case, one owner — shared ownership is how cases stall.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>The incident card</b> — <span>Time, camera, frame, AI assessment, event count — enough to triage without opening.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>KPI strip</b> — <span>Open counts and response statistics — the shift's performance picture at a glance.</span></div></div>
+            <div class="step"><span class="num red">5</span><div class="tx"><b>Search & filters</b> — <span>חיפוש אירועים, severity and assignee filters — cut the board to what you own.</span></div></div>
+            <div class="step"><span class="num red">6</span><div class="tx"><b>The tab badge (3)</b> — <span>Cases awaiting triage. A professional console runs this number to zero every shift.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">חיפוש אירועים…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 21 — Settings: Account & Users ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item active"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Settings: Account & Users</div>
+      <div class="meta mono">A-21 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Who is this console working as?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">Settings opens from the gear in the sidebar footer. The first section answers the most important operational question on a shared console: who is this work attributed to?</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/21-settings-account.png" alt="Settings: Account & Users" />
+
+        <span class="marker" style="left:75.5%;top:17.5%;">1</span>
+        <span class="marker" style="left:43%;top:31.5%;">2</span>
+        <span class="marker" style="left:52.5%;top:47.5%;">3</span>
+        <span class="marker" style="left:33.5%;top:47.5%;">4</span>
+        <span class="marker" style="left:27.3%;top:53.5%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The section nav</b> — <span>חשבון ומשתמשים, כניסה מהירה, פקודה קולית, כוונון תגובות, מרכז הלמידה — five sections, covered in order.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>The user list</b> — <span>tester with a green active dot — acknowledgments, notes and closures are signed by this identity.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>כינוי — nickname field</b> — <span>A new operator starts with a name…</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>מפתח Ghost API</b> — <span>…and a key. The eye toggle reveals it only while you paste.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>צור משתמש</b> — <span>Creates the operator. Switching identities happens in the sidebar footer at every relief.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">נהל משתמשים…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 22 — Settings: Quick-Login Link ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item active"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Settings: Quick-Login Link</div>
+      <div class="meta mono">A-22 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How do I hand access to a teammate without sharing keys?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">כניסה מהירה mints a one-time magic link — the correct way to hand the console to a relief operator, a supervisor, or your own second device.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/22-settings-quicklink.png" alt="Settings: Quick-Login Link" />
+
+        <span class="marker" style="left:47.5%;top:29.5%;">1</span>
+        <span class="marker" style="left:31.5%;top:29.5%;">2</span>
+        <span class="marker" style="left:25.5%;top:29.5%;">3</span>
+        <span class="marker" style="left:27%;top:33.5%;">4</span>
+        <span class="marker" style="left:27.5%;top:24.7%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The minted link</b> — <span>https://…?magic=… — single-use, already on your clipboard the moment it is created.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>העתק לינק</b> — <span>Copies again. Deliver only over your site's approved channel — an unsent link is a signed blank pass.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Open in new tab</b> — <span>Test door: opening the link lands signed-in, no typing.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>צור לינק חדש</b> — <span>Regenerates — voiding the old link. If a link may have leaked: regenerate first, investigate second.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>פג תוקף בעוד 15 דק׳</b> — <span>The countdown. Links expire on their own; never archive them.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">צור לינק כניסה מהירה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 23 — Settings: Voice Command ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item active"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Settings: Voice Command</div>
+      <div class="meta mono">A-23 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Configure hands-free operation for me.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">פקודת שליחה קולית: with voice on, speech becomes text in the composer, and speaking your send phrase fires the message — eyes on the scene, hands on the radio.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/23-settings-voice.png" alt="Settings: Voice Command" />
+
+        <span class="marker" style="left:26%;top:27.5%;">1</span>
+        <span class="marker" style="left:45.5%;top:32.8%;">2</span>
+        <span class="marker" style="left:26.5%;top:32.8%;">3</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>הפעלת פקודה קולית — master switch</b> — <span>On: the composer gains a microphone. Off: no listening, ever — some rooms require that posture.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>The send phrase — ביצוע</b> — <span>Up to two words, Hebrew or English. Pick something you never say mid-sentence.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>שמירה</b> — <span>Saves the phrase. In open-plan rooms, coordinate phrases with neighboring consoles.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">אמור את מילת השליחה…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 24 — Settings: Response Tuning ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item active"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Settings: Response Tuning</div>
+      <div class="meta mono">A-24 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Where are the speed-versus-depth dials?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">כוונון תגובות holds the dials. Per-conversation dials (accuracy, length, image detail) need an active conversation; the two shown here are console-wide.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/24-settings-tuning.png" alt="Settings: Response Tuning" />
+
+        <span class="marker" style="left:49%;top:26.5%;">1</span>
+        <span class="marker" style="left:30%;top:37%;">2</span>
+        <span class="marker" style="left:30%;top:44%;">3</span>
+        <span class="marker" style="left:59.5%;top:66.5%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>מהירות מול דיוק — per-conversation</b> — <span>Open a conversation first; then this section adds the accuracy (1–4), length and image-detail dials for that post.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>איכות הצילום: חד / מאוזן / מהיר</b> — <span>How sharply this browser samples frames before sending. חד (sharp) is selected — drop to fast on weak hardware.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The explainer card</b> — <span>מה זה אומר בפועל — every dial explains its trade-off in plain words. Read before you turn.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>שיום אוטומטי: מופעל / כבוי</b> — <span>The global auto-naming switch — the sparkles button on each row overrides it per conversation.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">כוון את התגובות…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 25 — The Learning Center ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item active"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Learning Center</div>
+      <div class="meta mono">A-25 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Where do I replay the guided chapters?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">מרכז הלמידה holds eleven guided chapters that spotlight the real console, control by control. When a feature has gone unused for a month, replay its chapter before the shift that needs it.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/26-onboarding-hub.png" alt="The Learning Center" />
+
+        <span class="marker" style="left:50%;top:17%;">1</span>
+        <span class="marker" style="left:50%;top:23%;">2</span>
+        <span class="marker" style="left:50%;top:64%;">3</span>
+        <span class="marker" style="left:47%;top:88.8%;">4</span>
+        <span class="marker" style="left:59%;top:88.8%;">5</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>Progress — 0/11 פרקים הושלמו</b> — <span>Your track record through the chapters, also mirrored in Settings → מרכז הלמידה.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Chapter 01 — ברוכים הבאים</b> — <span>The first-entry tour you saw on day one — replayable any time.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>Chapters 02–11</b> — <span>תפריט הצד, מצלמות ושידור חי, זיכרון, התראות… — each opens a live spotlight on the actual control.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>המשך מהיכן שעצרת</b> — <span>Resumes mid-course — the hub remembers your place.</span></div></div>
+            <div class="step"><span class="num">5</span><div class="tx"><b>התחל מחדש</b> — <span>Resets progress and runs the full course again — recommended before the certification exam.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">המשך מהיכן שעצרת…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 26 — The Classified-Information Guard ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item active"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">The Classified-Information Guard</div>
+      <div class="meta mono">A-26 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What happens if someone interrogates Ghost about itself?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">A real probing attempt, caught live: questions about Ghost's internals draw red classified-information warnings, and the attempt itself is logged. This page also shows the breadcrumb trail of a filed conversation.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/15-security-block-breadcrumbs.png" alt="The Classified-Information Guard" />
+
+        <span class="marker red" style="left:26%;top:47%;">1</span>
+        <span class="marker red" style="left:38%;top:57.5%;">2</span>
+        <span class="marker red" style="left:38%;top:79%;">3</span>
+        <span class="marker red" style="left:73%;top:2.8%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num red">1</span><div class="tx"><b>The probing question</b> — <span>“איזה טכנולוגיות מפעילות אותך?” — operators do not need this, and Ghost knows it.</span></div></div>
+            <div class="step"><span class="num red">2</span><div class="tx"><b>אזהרת דליפת מידע מסווג — the red block</b> — <span>מידע מסווג. Ghost לא חושף את אופן פעולתו — the refusal is branded, calm, and final.</span></div></div>
+            <div class="step"><span class="num red">3</span><div class="tx"><b>The logged attempt</b> — <span>“This request has been logged as an attempt to access classified technical information” — treat a colleague probing like this as a reportable event.</span></div></div>
+            <div class="step"><span class="num red">4</span><div class="tx"><b>Breadcrumbs — מפעל מגם ציפורי › חנייה › 1 מלא מהיר</b> — <span>A filed conversation shows its full path; clicking an ancestor opens that scope's broadcast.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ghost לא משתף פעולה פנימית…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPENDIX PAGE 27 — Dark Mode ============ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Visual Field Appendix</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+      <div class="nav-item"><span class="ix">01</span><span>Reading This Appendix</span></div>
+      <div class="nav-item"><span class="ix">02</span><span>Entry & First Conversation</span></div>
+      <div class="nav-item"><span class="ix">03</span><span>Cameras & Live Work</span></div>
+      <div class="nav-item"><span class="ix">04</span><span>Standing Alerts</span></div>
+      <div class="nav-item"><span class="ix">05</span><span>Organization & Broadcast</span></div>
+      <div class="nav-item"><span class="ix">06</span><span>Settings & Operations</span></div>
+      <div class="nav-item active"><span class="ix">07</span><span>Discipline & Variants</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Ghost Academy</b><br />Appendix A &middot; Real Console Screens &middot; 2026</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Dark Mode</div>
+      <div class="meta mono">A-27 / A-27</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Show me the console the way a night shift runs it.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker">Live console capture &middot; unedited screen</div>
+            <p class="intro">The sun/moon control in the sidebar footer flips the entire console to dark — doctrine for night shifts and dim control rooms. Every control you have learned sits exactly where you left it.</p>
+          </div>
+        </div>
+        <figure class="fig">
+          <img src="tools/operator-training/shots/27-dark-mode.png" alt="Dark Mode" />
+
+        <span class="marker" style="left:84.8%;top:96.8%;">1</span>
+        <span class="marker" style="left:89.5%;top:2.6%;">2</span>
+        <span class="marker" style="left:40%;top:50%;">3</span>
+        <span class="marker" style="left:40%;top:94%;">4</span>
+          <div class="figbar"><span>Ghost // Console</span><span>Captured live &middot; 2026</span></div>
+        </figure>
+        <div class="legend">
+            <div class="step"><span class="num">1</span><div class="tx"><b>The theme toggle</b> — <span>One press in the footer; the choice persists on this console between sessions.</span></div></div>
+            <div class="step"><span class="num">2</span><div class="tx"><b>Same chrome, inverted ink</b> — <span>Clock, tabs and tree — identical layout, monochrome dark palette, red still reserved for alerts and seconds.</span></div></div>
+            <div class="step"><span class="num">3</span><div class="tx"><b>The thread, readable in the dark</b> — <span>Contrast is tuned for long night watches — body text stays soft, evidence frames stay bright.</span></div></div>
+            <div class="step"><span class="num">4</span><div class="tx"><b>The composer, unchanged</b> — <span>Muscle memory survives the theme: every control from this appendix is in the same place.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">החלף ערכת נושא…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost Academy &middot; Operator Training Program &middot; Visual Field Appendix &middot; Confidential</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

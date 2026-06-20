@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — Field Guide · What Ghost Can Do</title>
+<style>
+  /* =========================================================
+     Ghost — Field Guide (What Ghost Can Do)
+     Black & White · ChatGPT-UI design system
+     One feature per A4 page · single chat screen per page
+     ========================================================= */
+  :root {
+    --bg-primary: #212121;
+    --bg-sidebar: #171717;
+    --bg-surface: #2f2f2f;
+    --bg-surface-hover: #3a3a3a;
+    --bg-code: #1e1e1e;
+    --text-primary: #ececec;
+    --text-secondary: #b4b4b4;
+    --text-muted: #767676;
+    --border-subtle: #3a3a3a;
+    --accent: #ececec;
+    --accent-ink: #171717;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #0d0d0d;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  /* ---------- A4 page = one ChatGPT screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 64mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 14px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .brand .name .sub {
+    display: block; font-size: 9.5px; font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.02em; margin-top: 1px;
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 40px; padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .newchat .plus {
+    width: 16px; height: 16px; position: relative; opacity: 0.85;
+  }
+  .newchat .plus::before, .newchat .plus::after {
+    content: ""; position: absolute; background: var(--text-secondary);
+  }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    padding: 12px 10px 4px; letter-spacing: 0.02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    height: 32px; padding: 0 11px;
+    border-radius: 11px;
+    font-size: 12px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 14px; flex-shrink: 0; }
+  .nav-item .lab { overflow: hidden; text-overflow: ellipsis; }
+  .nav-item.active {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 12px 10px 2px;
+    font-size: 10.5px; color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  /* ---------- Main column ---------- */
+  .main {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+  }
+  .topbar {
+    height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread {
+    flex: 1;
+    overflow: hidden;
+    padding: 26px 28px 8px;
+    display: flex; flex-direction: column;
+    gap: 22px;
+  }
+  .wrap { width: 100%; max-width: 150mm; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+  /* user message bubble (right aligned) */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    max-width: 78%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px;
+    padding: 11px 16px;
+    font-size: 14px; line-height: 1.55;
+  }
+
+  /* assistant message (full width, no bg) */
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    overflow: hidden; margin-top: 2px;
+  }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body p {
+    font-size: 14px; line-height: 1.75; color: var(--text-primary);
+  }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body .lead { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .msg-ai .body .para-dim { color: var(--text-secondary); }
+
+  /* ordered "how to" steps */
+  .steps-label {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin: 18px 0 2px;
+  }
+  .feat { list-style: none; margin-top: 6px; display: flex; flex-direction: column; gap: 0; }
+  .feat li {
+    padding: 13px 0; border-bottom: 1px solid var(--border-subtle);
+    display: flex; gap: 13px; align-items: flex-start;
+  }
+  .feat li:last-child { border-bottom: none; }
+  .feat .num {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid var(--border-subtle); background: var(--bg-surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    margin-top: 1px;
+  }
+  .feat .ft-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 2px; }
+
+  /* chips grid */
+  .chips { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .chip {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 13px 14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .chip .c-t { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .chip .c-d { font-size: 11px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+
+  .closer {
+    margin-top: 20px; padding: 22px;
+    border: 1px solid var(--border-subtle); border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .closer .big { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* ---------- Composer (decorative, sticky bottom) ---------- */
+  .composer-wrap { padding: 8px 28px 18px; margin-top: auto; }
+  .composer {
+    max-width: 150mm; margin: 0 auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 11px 12px 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); }
+  .composer .send {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    position: relative;
+  }
+  .composer .send::after {
+    content: ""; position: absolute; left: 50%; top: 52%;
+    width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink);
+    transform: translate(-50%,-50%) rotate(-45deg);
+  }
+  .disclaimer { max-width: 150mm; margin: 8px auto 0; text-align: center; font-size: 10.5px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — Start a conversation ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item active"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Start a conversation</div>
+      <div class="meta mono">01 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What do you see at the main gate right now?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">01 // Start a conversation</div>
+            <p class="lead">Ask your camera anything — <span class="dim">just talk to it like you'd talk to a colleague.</span></p>
+            <p>Open a new chat and type a question. There are no query builders, no rule trees, no menus to learn. Ghost looks at the live picture, understands what is happening, and writes back the answer in plain words.</p>
+            <p class="para-dim">Every conversation is the front door to the whole platform: the same plain-language box that answers "what do you see?" is the one you'll later use to set watch rules, scan a scene, or question the past.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open a new chat</div><div class="ft-desc">Press the + button to start a fresh conversation.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Type your question</div><div class="ft-desc">Write it at the bottom, e.g. "What do you see at the main gate?"</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Read the answer</div><div class="ft-desc">Ghost reads the live frame and writes back what it understands.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask your camera anything…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — Connect cameras ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Connect cameras</div>
+      <div class="meta mono">02 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Can this chat watch the loading bay camera?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">02 // Connect cameras</div>
+            <p class="lead">Plug a camera into the chat — <span class="dim">one feed, or many, live or saved.</span></p>
+            <p>A conversation can watch through a single camera or several at once: the phone in your hand right now (live), or cameras you saved earlier (fixed RTSP / HDMI feeds). Whatever they see, you can ask about — the feed appears above the chat and every question becomes about that view.</p>
+            <div class="chips">
+              <div class="chip"><div class="c-t">Live</div><div class="c-d">Use the device camera in front of you, right now.</div></div>
+              <div class="chip"><div class="c-t">Saved</div><div class="c-d">Reconnect a fixed camera you configured before.</div></div>
+            </div>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open the camera menu</div><div class="ft-desc">Pick which camera this conversation should watch.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Choose live or saved</div><div class="ft-desc">Watch right now, or reconnect a saved camera.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Ask away</div><div class="ft-desc">The feed appears above the chat — your questions are now about what it sees.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Connect a camera to this chat…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — Organize ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Organize</div>
+      <div class="meta mono">03 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How do I keep 40 cameras from turning into chaos?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">03 // Organize</div>
+            <p class="lead">Sort cameras into areas and groups — <span class="dim">tidy boxes inside tidy boxes.</span></p>
+            <p>When you run many cameras, you file them. An <b>Area</b> is a big box (like "North Yard"). Inside it you make <b>Groups</b> (like "Gates"). Then you drag each camera-chat into the right box, so the sidebar mirrors the real site instead of an endless flat list.</p>
+            <p class="para-dim">This structure isn't just cosmetic: areas and groups are also what let you later question a whole zone at once (see capability 08).</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Add an area</div><div class="ft-desc">Press "Add area" and name your big zone.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Add a group</div><div class="ft-desc">Inside the area, press + to add a group.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Drag to file</div><div class="ft-desc">Drag a conversation into the area or group to file it there.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Name a new area…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — System prompt ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">System prompt</div>
+      <div class="meta mono">04 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">You guard the parking lot. Tell me about anyone near the cars.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">04 // System prompt</div>
+            <p class="lead">Tell Ghost what to care about — <span class="dim">a standing brief for this camera.</span></p>
+            <p>A system prompt is a short note you give Ghost so it knows its job for this chat — like "You guard the parking lot. Tell me about anyone near the cars." It carries that focus into every answer, so you don't have to repeat yourself.</p>
+            <p class="para-dim">Each conversation keeps its own brief, which means the same platform can act as a gate guard in one chat and a loading-dock supervisor in another.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open chat settings</div><div class="ft-desc">Tap the sliders icon for this conversation.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Write the focus</div><div class="ft-desc">Describe what this camera should pay attention to.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Save</div><div class="ft-desc">Now every answer follows your instructions.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Describe what this camera should focus on…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 5 — Memory ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Memory</div>
+      <div class="meta mono">05 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What have you logged on this camera so far?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">05 // Memory</div>
+            <p class="lead">Ghost remembers what it saw — <span class="dim">a notebook you can open any time.</span></p>
+            <p>Ghost keeps a small notebook for each chat. <b>Tracking</b> lists every person and vehicle it spotted. <b>Observations</b> are short notes about them. <b>Facts</b> are the things it learned and should keep remembering. Open the notebook whenever you want to read it back.</p>
+            <div class="chips">
+              <div class="chip"><div class="c-t">Tracking</div><div class="c-d">Every person and vehicle Ghost noticed.</div></div>
+              <div class="chip"><div class="c-t">Observations</div><div class="c-d">Short, timestamped notes about them.</div></div>
+              <div class="chip"><div class="c-t">Facts</div><div class="c-d">Durable knowledge worth remembering.</div></div>
+              <div class="chip"><div class="c-t">Always readable</div><div class="c-d">Open the panel at any moment.</div></div>
+            </div>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open the memory panel</div><div class="ft-desc">Tap the brain icon.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Turn on tracking</div><div class="ft-desc">Ghost logs people and vehicles as it sees them.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Read it back</div><div class="ft-desc">Switch tabs for observations and saved facts.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask Ghost what it remembers…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 6 — Scan the scene ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item active"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Scan the scene</div>
+      <div class="meta mono">06 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Give me a full read of everything in this frame.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">06 // Scan the scene</div>
+            <p class="lead">One button to read the whole place — <span class="dim">a quick safety check of the room.</span></p>
+            <p>Tap the scan button and Ghost takes one good look at everything in the picture, then writes a full report: what's normal, and what looks off. Instead of asking one question at a time, you get a structured sweep of the entire scene in a single pass.</p>
+            <p class="para-dim">Use it when you walk up to a feed cold and want the whole story before you start asking follow-ups.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Use a saved camera</div><div class="ft-desc">Make sure the chat is connected to a camera.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Press scan</div><div class="ft-desc">Tap the eye button in the header.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Read the report</div><div class="ft-desc">Ghost writes a full account of the whole scene.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Scan the whole scene…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 7 — Ask about the past ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item active"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Ask about the past</div>
+      <div class="meta mono">07 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Who passed the loading bay last night?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">07 // Ask about the past</div>
+            <p class="lead">Who was here? What happened? — <span class="dim">ask, don't scrub.</span></p>
+            <p>Ghost doesn't forget. You can ask about earlier today or last night — "Who passed the loading bay?" — and it answers from what it actually saw and wrote down, with the time. No scrubbing through hours of footage; the feed has become searchable memory.</p>
+            <p class="para-dim">Because answers come from timestamped observations, you get the "who / what / when" directly instead of a clip to review.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open a watched chat</div><div class="ft-desc">Any conversation that has watched a camera.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Ask about the past</div><div class="ft-desc">A "who / what / when" question about earlier.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Get a timestamped answer</div><div class="ft-desc">Ghost replies from its saved observations and times.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about earlier today or last night…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 8 — Talk to a whole zone ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item active"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Talk to a whole zone</div>
+      <div class="meta mono">08 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Is anyone in the north yard right now?</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">08 // Talk to a whole zone</div>
+            <p class="lead">Ask many cameras at once — <span class="dim">one question, the whole zone answers.</span></p>
+            <p>Click an area or group name and you talk to all of its cameras together. Ask once — "Is anyone in the yard?" — and Ghost checks every camera in that zone and answers as one, instead of you hopping between feeds.</p>
+            <p class="para-dim">This is where the structure from capability 03 pays off: a tidy area is also a single thing you can question.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Select a zone</div><div class="ft-desc">Click an area or group name (or the radio icon).</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Ask once</div><div class="ft-desc">Type a single question for the whole zone.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Get one answer</div><div class="ft-desc">Ghost looks through every camera there and replies as one.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask the whole zone one question…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 9 — Alerts ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Field Guide · What Ghost Can Do</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Capabilities</div>
+    <div class="nav-item"><span class="ix">01</span><span class="lab">Start a conversation</span></div>
+    <div class="nav-item"><span class="ix">02</span><span class="lab">Connect cameras</span></div>
+    <div class="nav-item"><span class="ix">03</span><span class="lab">Organize</span></div>
+    <div class="nav-item"><span class="ix">04</span><span class="lab">System prompt</span></div>
+    <div class="nav-item"><span class="ix">05</span><span class="lab">Memory</span></div>
+    <div class="nav-item"><span class="ix">06</span><span class="lab">Scan the scene</span></div>
+    <div class="nav-item"><span class="ix">07</span><span class="lab">Ask about the past</span></div>
+    <div class="nav-item"><span class="ix">08</span><span class="lab">Talk to a whole zone</span></div>
+    <div class="nav-item active"><span class="ix">09</span><span class="lab">Alerts</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Field Guide · What Ghost Can Do · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Alerts</div>
+      <div class="meta mono">09 / 09</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Tell me if the gate opens after 10pm.</div></div>
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">09 // Alerts</div>
+            <p class="lead">Give each chat its own watch rules — <span class="dim">Ghost watches so you don't have to.</span></p>
+            <p>For every camera-chat you can write rules in plain words, like "Tell me if the gate opens after 10pm." Turn alert mode on and Ghost watches by itself, staying quiet until your rule actually happens — then it speaks up.</p>
+            <p class="para-dim">Rules live per conversation, so each camera enforces exactly the watch that matters for its spot.</p>
+            <div class="steps-label mono">How it works</div>
+            <ul class="feat">
+              <li><span class="num">1</span><div><div class="ft-title">Open the alert panel</div><div class="ft-desc">Tap the shield icon.</div></div></li>
+              <li><span class="num">2</span><div><div class="ft-title">Write a rule</div><div class="ft-desc">Describe the watch in plain words and turn it on.</div></div></li>
+              <li><span class="num">3</span><div><div class="ft-title">Flip alert mode on</div><div class="ft-desc">Ghost watches on its own and alerts you when it triggers.</div></div></li>
+            </ul>
+            <div class="closer">
+              <div class="big">Ghost — Question your cameras in plain language</div>
+              <div class="small">Nine capabilities · One conversation · Confidential Field Guide</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Describe a watch rule in plain words…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Question your cameras in plain language</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

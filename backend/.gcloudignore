@@ -1,0 +1,23 @@
+# Files NOT uploaded to Cloud Build when running `gcloud run deploy --source`.
+# Keep this tight: only app source + requirements + Dockerfile are needed.
+venv/
+.venv/
+data/
+# But DO upload the generated product-knowledge snapshot — Ghost needs the 9
+# capabilities at runtime. (gitignore syntax: data/ matches app/data/ too.)
+!app/data/
+!app/data/ghost_capabilities.json
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+tests/
+.pytest_cache/
+.DS_Store
+.git/
+node_modules/

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — Enterprise Architecture</title>
+<style>
+  /* =========================================================
+     Ghost Enterprise Architecture
+     Black & White · ChatGPT-UI design system
+     Tokens follow chatgpt-ui-clone (dark), accent neutralised
+     ========================================================= */
+  :root {
+    --bg-primary: #212121;
+    --bg-sidebar: #171717;
+    --bg-surface: #2f2f2f;
+    --bg-surface-hover: #3a3a3a;
+    --bg-code: #1e1e1e;
+    --text-primary: #ececec;
+    --text-secondary: #b4b4b4;
+    --text-muted: #767676;
+    --border-subtle: #3a3a3a;
+    /* monochrome accent (no color) */
+    --accent: #ececec;
+    --accent-ink: #171717;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #0d0d0d;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  /* ---------- A4 page = one ChatGPT screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 64mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 14px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .brand .name .sub {
+    display: block; font-size: 9.5px; font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.02em; margin-top: 1px;
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 40px; padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .newchat .plus {
+    width: 16px; height: 16px; position: relative; opacity: 0.85;
+  }
+  .newchat .plus::before, .newchat .plus::after {
+    content: ""; position: absolute; background: var(--text-secondary);
+  }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    padding: 14px 10px 4px; letter-spacing: 0.02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    height: 38px; padding: 0 11px;
+    border-radius: 11px;
+    font-size: 12.5px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 14px; }
+  .nav-item.active {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 12px 10px 2px;
+    font-size: 10.5px; color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  /* ---------- Main column ---------- */
+  .main {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+  }
+  .topbar {
+    height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread {
+    flex: 1;
+    overflow: hidden;
+    padding: 26px 28px 8px;
+    display: flex; flex-direction: column;
+    gap: 22px;
+  }
+  .wrap { width: 100%; max-width: 150mm; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+  /* user message bubble (right aligned) */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    max-width: 78%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px;
+    padding: 11px 16px;
+    font-size: 14px; line-height: 1.55;
+  }
+
+  /* assistant message (full width, no bg) */
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    overflow: hidden; margin-top: 2px;
+  }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body p {
+    font-size: 14px; line-height: 1.75; color: var(--text-primary);
+  }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body .lead { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+
+  /* principle / feature list */
+  .feat { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 0; }
+  .feat li {
+    padding: 13px 0; border-bottom: 1px solid var(--border-subtle);
+    display: flex; gap: 13px; align-items: flex-start;
+  }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-primary); margin-top: 7px; flex-shrink: 0;
+  }
+  .feat .ft-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 2px; }
+
+  /* pipeline diagram rendered as code-style block */
+  .codeblock {
+    margin-top: 14px;
+    background: var(--bg-code);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .codeblock .cb-head {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #2a2a2a; padding: 8px 14px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .codeblock .cb-head .copy { font-size: 11px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 18px 16px; }
+
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+  .node {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    display: flex; flex-direction: column; gap: 4px; justify-content: center;
+  }
+  .node .n-t { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.25; }
+  .node .n-s { font-size: 9.5px; color: var(--text-muted); }
+  .arrow {
+    align-self: center; width: 26px; text-align: center;
+    color: var(--text-muted); font-size: 15px; flex-shrink: 0;
+  }
+
+  /* chips grid */
+  .chips { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .chip {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 13px 14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .chip .c-t { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .chip .c-d { font-size: 11px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+
+  /* stat strip */
+  .stats { margin-top: 16px; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .stat { border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 10px; text-align: center; }
+  .stat .s-b { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .stat .s-l { font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+  .closer {
+    margin-top: 20px; padding: 22px;
+    border: 1px solid var(--border-subtle); border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .closer .big { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* ---------- Composer (decorative, sticky bottom) ---------- */
+  .composer-wrap { padding: 8px 28px 18px; }
+  .composer {
+    max-width: 150mm; margin: 0 auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 11px 12px 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); }
+  .composer .send {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    position: relative;
+  }
+  .composer .send::after {
+    content: ""; position: absolute; left: 50%; top: 52%;
+    width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink);
+    transform: translate(-50%,-50%) rotate(-45deg);
+  }
+  .disclaimer { max-width: 150mm; margin: 8px auto 0; text-align: center; font-size: 10.5px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — Executive Overview ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Enterprise Architecture</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item active"><span class="ix">01</span><span>Executive Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Core System Architecture</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Deployment Models</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Enterprise Technical Overview · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Executive Overview</div>
+      <div class="meta mono">01 / 04</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What is Ghost, and what does the platform actually do?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">Ghost Enterprise Architecture</div>
+            <p class="lead">Ghost turns live video streams into <span class="dim">operational awareness in real time.</span></p>
+            <p>Ghost is an enterprise-grade visual intelligence platform. It combines advanced Vision AI and Large Language Models to provide deep contextual understanding of complex environments, letting operators interact with cameras using natural language.</p>
+            <p>The system lets organizations manage cameras as conversational entities — similar to modern messaging platforms — while maintaining strict enterprise security standards, deployment flexibility, and a privacy-focused architecture.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask Ghost about the platform…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Enterprise Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — Core System Architecture ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Enterprise Architecture</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Overview</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>Core System Architecture</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Deployment Models</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Enterprise Technical Overview · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Core System Architecture</div>
+      <div class="meta mono">02 / 04</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How does data flow through the system, and what are the design principles?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>The Ghost processing engine receives video streams from existing security infrastructure using RTSP, HDMI capture, or isolated local integrations. Frames are analyzed in real time by AI models that generate structured operational narratives, alerts, and contextual insights.</p>
+
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">core-pipeline</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">
+                <div class="pipe">
+                  <div class="node"><span class="n-t">Security Cameras</span><span class="n-s">existing infra</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">RTSP / HDMI</span><span class="n-s">capture</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Ghost Vision AI</span><span class="n-s">LLM + Vision</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Operator Interface</span><span class="n-s">natural language</span></div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Zero Trust Architecture</div><div class="ft-desc">Segregated access control, role-based permissions, and monitored data flow.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Privacy by Design</div><div class="ft-desc">Minimized exposure of raw video and configurable retention policies.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Agentless Integration</div><div class="ft-desc">No software agents required on cameras or NVR devices.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Operational Intelligence</div><div class="ft-desc">Real-time contextual understanding instead of basic object detection.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Flexible Deployment</div><div class="ft-desc">Supports local, isolated, hybrid-cloud, and enterprise SOC environments.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about the processing pipeline…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Enterprise Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — Deployment Models ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Enterprise Architecture</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Core System Architecture</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>Deployment Models</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Enterprise Technical Overview · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Deployment Models</div>
+      <div class="meta mono">03 / 04</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Which deployment configurations does Ghost support?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Ghost supports multiple deployment configurations in order to comply with enterprise cybersecurity, compliance, and operational requirements.</p>
+
+            <div class="chips">
+              <div class="chip"><div class="c-t">Local RTSP Deployment</div><div class="c-d">Processing within isolated enterprise networks.</div></div>
+              <div class="chip"><div class="c-t">Air-Gapped Environment</div><div class="c-d">For highly sensitive facilities.</div></div>
+              <div class="chip"><div class="c-t">HDMI Capture Isolation</div><div class="c-d">Isolated capture architecture.</div></div>
+              <div class="chip"><div class="c-t">Hybrid Cloud Architecture</div><div class="c-d">Hybrid cloud intelligence environments.</div></div>
+              <div class="chip" style="grid-column: 1 / -1;"><div class="c-t">Enterprise SOC Integration</div><div class="c-d">Integration with Security Operations Centers (SOC) and enterprise SIEM platforms.</div></div>
+            </div>
+
+            <div class="kicker mono" style="margin-top:22px;">Security &amp; Compliance Framework</div>
+            <div class="chips" style="margin-top:8px;">
+              <div class="chip"><div class="c-t">Zero Trust Architecture</div></div>
+              <div class="chip"><div class="c-t">Access Control &amp; Audit Logs</div></div>
+              <div class="chip"><div class="c-t">Encrypted Data Channels</div></div>
+              <div class="chip"><div class="c-t">Minimal Data Retention</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about a specific deployment model…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Enterprise Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — Security & Compliance ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">Enterprise Architecture</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Executive Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Core System Architecture</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Deployment Models</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>Security &amp; Compliance</span></div>
+    <div class="spacer"></div>
+    <div class="foot"><b>Confidential</b><br />Enterprise Technical Overview · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Security &amp; Compliance</div>
+      <div class="meta mono">04 / 04</div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How does Ghost handle security, retention, and regulated industries?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Ghost is designed around enterprise security standards and operational resilience. The platform minimizes long-term retention of raw video and focuses on generating structured AI-driven contextual memory layers.</p>
+            <p>Security capabilities include encrypted communication channels, configurable audit logging, role-based access control, isolated processing environments, and configurable retention policies.</p>
+            <p>The architecture is suitable for organizations operating under strict compliance requirements — including healthcare institutions, industrial facilities, financial organizations, logistics operators, critical infrastructure environments, and large-scale security operations centers.</p>
+
+            <div class="stats">
+              <div class="stat"><div class="s-b">Zero Trust</div><div class="s-l">Segregated, role-based access</div></div>
+              <div class="stat"><div class="s-b">Encrypted</div><div class="s-l">Secured data channels</div></div>
+              <div class="stat"><div class="s-b">Agentless</div><div class="s-l">No agents on cameras / NVR</div></div>
+              <div class="stat"><div class="s-b">Minimal</div><div class="s-l">Configurable retention</div></div>
+            </div>
+
+            <div class="closer">
+              <div class="big">Ghost — Enterprise Visual Intelligence Infrastructure</div>
+              <div class="small">Confidential Enterprise Technical Overview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about compliance for your environment…</span><span class="send"></span></div>
+      <div class="disclaimer">Ghost — Enterprise Visual Intelligence Infrastructure</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

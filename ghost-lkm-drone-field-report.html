@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ghost — LKM-Drone Field Report</title>
+<style>
+  /* =========================================================
+     Ghost LKM-Drone — Counter-UAS Field Report
+     Black & White · ChatGPT-UI design system (gopdf line)
+     Tokens follow chatgpt-ui-clone (dark), accent neutralised
+     ========================================================= */
+  :root {
+    --bg-primary: #212121;
+    --bg-sidebar: #171717;
+    --bg-surface: #2f2f2f;
+    --bg-surface-hover: #3a3a3a;
+    --bg-code: #1e1e1e;
+    --text-primary: #ececec;
+    --text-secondary: #b4b4b4;
+    --text-muted: #767676;
+    --border-subtle: #3a3a3a;
+    /* monochrome accent (no color) */
+    --accent: #ececec;
+    --accent-ink: #171717;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    background: #0d0d0d;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .mono { font-family: var(--mono); letter-spacing: 0.04em; }
+
+  /* ---------- A4 page = one ChatGPT screen ---------- */
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg-primary);
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 64mm;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 14px;
+  }
+  .brand img {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: block;
+  }
+  .brand .name {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .brand .name .sub {
+    display: block; font-size: 9.5px; font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.02em; margin-top: 1px;
+  }
+
+  .newchat {
+    display: flex; align-items: center; gap: 10px;
+    height: 40px; padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .newchat .plus {
+    width: 16px; height: 16px; position: relative; opacity: 0.85;
+  }
+  .newchat .plus::before, .newchat .plus::after {
+    content: ""; position: absolute; background: var(--text-secondary);
+  }
+  .newchat .plus::before { left: 7px; top: 1px; width: 2px; height: 14px; border-radius: 2px; }
+  .newchat .plus::after { top: 7px; left: 1px; height: 2px; width: 14px; border-radius: 2px; }
+
+  .nav-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    padding: 14px 10px 4px; letter-spacing: 0.02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    height: 38px; padding: 0 11px;
+    border-radius: 11px;
+    font-size: 12.5px; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-item .ix { font-size: 10px; color: var(--text-muted); width: 14px; }
+  .nav-item.active {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+  .nav-item.active .ix { color: var(--text-primary); }
+
+  .sidebar .spacer { flex: 1; }
+
+  /* classification plate pinned above the footer */
+  .classplate {
+    border: 1px solid var(--border-subtle);
+    border-radius: 11px;
+    padding: 10px 11px;
+    margin: 0 2px 10px;
+  }
+  .classplate .cl-top {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--text-primary);
+  }
+  .classplate .cl-sub {
+    font-size: 9.5px; color: var(--text-muted); letter-spacing: 0.04em;
+    margin-top: 3px; line-height: 1.5;
+  }
+
+  .sidebar .foot {
+    border-top: 1px solid var(--border-subtle);
+    padding: 12px 10px 2px;
+    font-size: 10.5px; color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .sidebar .foot b { color: var(--text-secondary); font-weight: 600; }
+
+  /* ---------- Main column ---------- */
+  .main {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+  }
+  .topbar {
+    height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topbar .title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .topbar .right { display: flex; align-items: center; gap: 12px; }
+  .topbar .classtag {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle); border-radius: 999px;
+    padding: 3px 9px;
+  }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+
+  .thread {
+    flex: 1;
+    overflow: hidden;
+    padding: 26px 28px 8px;
+    display: flex; flex-direction: column;
+    gap: 22px;
+  }
+  .wrap { width: 100%; max-width: 150mm; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+  /* user message bubble (right aligned) */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    max-width: 78%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px;
+    padding: 11px 16px;
+    font-size: 14px; line-height: 1.55;
+  }
+
+  /* assistant message (full width, no bg) */
+  .msg-ai { display: flex; gap: 14px; }
+  .msg-ai .av {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    overflow: hidden; margin-top: 2px;
+  }
+  .msg-ai .av img { width: 100%; height: 100%; display: block; }
+  .msg-ai .body { flex: 1; min-width: 0; }
+  .msg-ai .body p {
+    font-size: 14px; line-height: 1.75; color: var(--text-primary);
+  }
+  .msg-ai .body p + p { margin-top: 12px; }
+  .msg-ai .body .lead { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .msg-ai .body .lead .dim { color: var(--text-secondary); font-weight: 500; }
+  .msg-ai .body .kicker {
+    font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .msg-ai .body .small-note {
+    font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 12px;
+  }
+
+  /* principle / feature list */
+  .feat { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 0; }
+  .feat li {
+    padding: 13px 0; border-bottom: 1px solid var(--border-subtle);
+    display: flex; gap: 13px; align-items: flex-start;
+  }
+  .feat li:last-child { border-bottom: none; }
+  .feat .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-primary); margin-top: 7px; flex-shrink: 0;
+  }
+  .feat .ft-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .feat .ft-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 2px; }
+
+  /* pipeline diagram rendered as code-style block */
+  .codeblock {
+    margin-top: 14px;
+    background: var(--bg-code);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .codeblock .cb-head {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #2a2a2a; padding: 8px 14px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .codeblock .cb-head .copy { font-size: 11px; color: var(--text-muted); }
+  .codeblock .cb-body { padding: 18px 16px; }
+
+  .pipe { display: flex; align-items: stretch; gap: 0; }
+  .node {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    display: flex; flex-direction: column; gap: 4px; justify-content: center;
+  }
+  .node .n-t { font-size: 11.5px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+  .node .n-s { font-size: 9px; color: var(--text-muted); }
+  .arrow {
+    align-self: center; width: 20px; text-align: center;
+    color: var(--text-muted); font-size: 14px; flex-shrink: 0;
+  }
+
+  /* tactical image figure (recon plate) */
+  .figure {
+    margin-top: 16px;
+    background: var(--bg-code);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .figure .fig-head {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #2a2a2a; padding: 8px 14px;
+    font-size: 10.5px; color: var(--text-secondary); letter-spacing: 0.06em;
+  }
+  .figure .fig-head .tag { color: var(--text-muted); }
+  .figure .fig-frame { position: relative; overflow: hidden; }
+  .figure .fig-frame img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.06);
+  }
+  /* corner brackets */
+  .figure .fig-frame .br {
+    position: absolute; width: 16px; height: 16px; opacity: 0.55;
+  }
+  .figure .fig-frame .br.tl { top: 10px; left: 10px; border-top: 1px solid #fff; border-left: 1px solid #fff; }
+  .figure .fig-frame .br.tr { top: 10px; right: 10px; border-top: 1px solid #fff; border-right: 1px solid #fff; }
+  .figure .fig-frame .br.bl { bottom: 10px; left: 10px; border-bottom: 1px solid #fff; border-left: 1px solid #fff; }
+  .figure .fig-frame .br.brm { bottom: 10px; right: 10px; border-bottom: 1px solid #fff; border-right: 1px solid #fff; }
+  .figure .fig-frame .stamp {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.78); white-space: nowrap;
+  }
+  .figure .fig-frame .corner-class {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.82); text-transform: uppercase;
+  }
+  .figure .fig-cap {
+    padding: 10px 14px; font-size: 11px; color: var(--text-secondary);
+    border-top: 1px solid var(--border-subtle); line-height: 1.5;
+  }
+  .figure .fig-cap b { color: var(--text-primary); font-weight: 600; }
+
+  .figrow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .figrow .figure { margin-top: 0; }
+
+  /* chips grid */
+  .chips { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .chip {
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 13px 14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .chip .c-t { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .chip .c-d { font-size: 11px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+
+  /* stat strip */
+  .stats { margin-top: 16px; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .stat { border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 10px; text-align: center; }
+  .stat .s-b { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .stat .s-l { font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+  .closer {
+    margin-top: 20px; padding: 22px;
+    border: 1px solid var(--border-subtle); border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .closer .big { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+  .closer .small { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+  /* ---------- Composer (decorative, sticky bottom) ---------- */
+  .composer-wrap { padding: 8px 28px 18px; }
+  .composer {
+    max-width: 150mm; margin: 0 auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 11px 12px 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .composer .ph { flex: 1; font-size: 13.5px; color: var(--text-muted); }
+  .composer .send {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    position: relative;
+  }
+  .composer .send::after {
+    content: ""; position: absolute; left: 50%; top: 52%;
+    width: 8px; height: 8px; border-top: 2px solid var(--accent-ink); border-right: 2px solid var(--accent-ink);
+    transform: translate(-50%,-50%) rotate(-45deg);
+  }
+  .disclaimer { max-width: 150mm; margin: 8px auto 0; text-align: center; font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 — Program Overview ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">LKM-Drone · Field Report</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item active"><span class="ix">01</span><span>Program Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Threat &amp; Detection Doctrine</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Proprietary Detection Engine</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Field Trial Results</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Distribution Control</span></div>
+    <div class="spacer"></div>
+    <div class="classplate">
+      <div class="cl-top mono">SECRET // NOFORN</div>
+      <div class="cl-sub">Handle via need-to-know channels only · LKM-Drone Program</div>
+    </div>
+    <div class="foot"><b>Classified</b><br />Counter-UAS Field Report · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Program Overview</div>
+      <div class="right">
+        <span class="classtag mono">SECRET // NOFORN</span>
+        <span class="meta mono">01 / 05</span>
+      </div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What is LKM-Drone, and who is cleared to read this report?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <div class="kicker mono">Ghost LKM-Drone · Counter-UAS Field Report</div>
+            <p class="lead">LKM-Drone turns the sensors you already field into <span class="dim">an active aerial early-warning layer.</span></p>
+            <p>LKM-Drone is Ghost's counter-UAS Visual Intelligence system. It fuses behavioral AI, temporal analysis and thermal intelligence to detect, classify, track and alert on small aerial threats — including drones that appear as only a few pixels within a sensor frame.</p>
+            <p>This report documents the system doctrine, the proprietary detection engine, and results from a controlled counter-UAS field trial conducted across desert and border-sector terrain, day and night.</p>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Classification</div><div class="ft-desc">SECRET // NOFORN. Released on a strict need-to-know basis under signed NDA and program access controls.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Distribution</div><div class="ft-desc">Named recipient only. No forwarding, reproduction, or storage on uncontrolled systems. Each copy is attributable.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Scope</div><div class="ft-desc">Doctrine, detection technology, and field-trial evidence. Sensor placements and site identities are withheld.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask LKM-Drone about the program…</span><span class="send"></span></div>
+      <div class="disclaimer">SECRET // NOFORN · Need-to-know · Ghost LKM-Drone — Aerial Threat Intelligence</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 2 — Threat & Detection Doctrine ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">LKM-Drone · Field Report</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Program Overview</span></div>
+    <div class="nav-item active"><span class="ix">02</span><span>Threat &amp; Detection Doctrine</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Proprietary Detection Engine</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Field Trial Results</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Distribution Control</span></div>
+    <div class="spacer"></div>
+    <div class="classplate">
+      <div class="cl-top mono">SECRET // NOFORN</div>
+      <div class="cl-sub">Handle via need-to-know channels only · LKM-Drone Program</div>
+    </div>
+    <div class="foot"><b>Classified</b><br />Counter-UAS Field Report · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Threat &amp; Detection Doctrine</div>
+      <div class="right">
+        <span class="classtag mono">SECRET // NOFORN</span>
+        <span class="meta mono">02 / 05</span>
+      </div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">Why do small drones defeat conventional systems, and how is LKM-Drone different?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Small, low-cost drones fly low, move unpredictably, and generate minimal radar signature. At operational range a drone may occupy a handful of pixels — indistinguishable from background noise for conventional object recognition. The decisive question is not whether something <em>looks</em> like a drone, but whether it <em>behaves</em> like one.</p>
+
+            <div class="figure">
+              <div class="fig-head mono"><span>FIELD-TRIAL · NIGHT EXERCISE</span><span class="tag">CAM-12 · SECTOR NORTH</span></div>
+              <div class="fig-frame" style="aspect-ratio: 21 / 9;">
+                <img src="frontend/public/lkm-field-trial-operator.png" alt="Counter-UAS field trial — operator and tripod thermal observation camera at night" />
+                <span class="corner-class">SECRET // NOFORN</span>
+                <span class="br tl"></span><span class="br tr"></span><span class="br bl"></span><span class="br brm"></span>
+                <span class="stamp">FIELD TRIAL · NIGHT · 02:41:07 · AZ 041&deg; · EL +6&deg;</span>
+              </div>
+              <div class="fig-cap"><b>Plate 1 — Counter-UAS field exercise.</b> A single operator runs LKM-Drone against live airspace using a tripod thermal observation head; classification and tracking are surfaced on the tactical tablet. No dedicated radar is present.</div>
+            </div>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Behavior over shape</div><div class="ft-desc">Instead of searching for a drone silhouette, Ghost evaluates motion, hovering bursts and course corrections across time.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Temporal, not single-frame</div><div class="ft-desc">A contact is judged on its trajectory and persistence — not a single ambiguous frame.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Discrimination by default</div><div class="ft-desc">Birds, debris and thermal noise are separated from stabilised flight before an alert is ever raised.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about the detection doctrine…</span><span class="send"></span></div>
+      <div class="disclaimer">SECRET // NOFORN · Need-to-know · Ghost LKM-Drone — Aerial Threat Intelligence</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 3 — Proprietary Detection Engine ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">LKM-Drone · Field Report</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Program Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Threat &amp; Detection Doctrine</span></div>
+    <div class="nav-item active"><span class="ix">03</span><span>Proprietary Detection Engine</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Field Trial Results</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Distribution Control</span></div>
+    <div class="spacer"></div>
+    <div class="classplate">
+      <div class="cl-top mono">SECRET // NOFORN</div>
+      <div class="cl-sub">Handle via need-to-know channels only · LKM-Drone Program</div>
+    </div>
+    <div class="foot"><b>Classified</b><br />Counter-UAS Field Report · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Proprietary Detection Engine</div>
+      <div class="right">
+        <span class="classtag mono">SECRET // NOFORN</span>
+        <span class="meta mono">03 / 05</span>
+      </div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How does the engine turn faint motion into a defensible threat probability?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Three behavioral layers run together over every sensor and feed a single continuous loop — from observation through to investigation. Every contact carries a calibrated, auditable confidence score.</p>
+
+            <div class="codeblock">
+              <div class="cb-head"><span class="mono">detection-loop</span><span class="copy mono">copy</span></div>
+              <div class="cb-body">
+                <div class="pipe">
+                  <div class="node"><span class="n-t">Observe</span><span class="n-s">sensors</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Detect</span><span class="n-s">behavior</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Classify</span><span class="n-s">signature</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Track</span><span class="n-s">trajectory</span></div>
+                  <div class="arrow">&rarr;</div>
+                  <div class="node"><span class="n-t">Alert</span><span class="n-s">operator</span></div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="feat">
+              <li><span class="dot"></span><div><div class="ft-title">Micro-Signature Tracking&trade;</div><div class="ft-desc">Profiles position, acceleration, hovering and course-correction to separate drone from bird from aircraft with high precision.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Micro-Flutter Analysis&trade;</div><div class="ft-desc">Extracts the thousands of per-minute stabilisation adjustments a flight controller makes — a fingerprint invisible to the eye.</div></div></li>
+              <li><span class="dot"></span><div><div class="ft-title">Heat Atlas&trade;</div><div class="ft-desc">Maintains a live thermal model of the scene, learning stable and dynamic zones so the system understands the environment before it searches for threats.</div></div></li>
+            </ul>
+
+            <p class="small-note">Continuously evaluated: motion trajectories · flight behavior · stabilization patterns · direction changes · thermal signatures · micro-vibrations · environmental anomalies · object persistence · threat probability.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about the detection engine…</span><span class="send"></span></div>
+      <div class="disclaimer">SECRET // NOFORN · Need-to-know · Ghost LKM-Drone — Aerial Threat Intelligence</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 4 — Field Trial Results ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">LKM-Drone · Field Report</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Program Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Threat &amp; Detection Doctrine</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Proprietary Detection Engine</span></div>
+    <div class="nav-item active"><span class="ix">04</span><span>Field Trial Results</span></div>
+    <div class="nav-item"><span class="ix">05</span><span>Deployment &amp; Distribution Control</span></div>
+    <div class="spacer"></div>
+    <div class="classplate">
+      <div class="cl-top mono">SECRET // NOFORN</div>
+      <div class="cl-sub">Handle via need-to-know channels only · LKM-Drone Program</div>
+    </div>
+    <div class="foot"><b>Classified</b><br />Counter-UAS Field Report · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Field Trial Results</div>
+      <div class="right">
+        <span class="classtag mono">SECRET // NOFORN</span>
+        <span class="meta mono">04 / 05</span>
+      </div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">What did the controlled field trial actually demonstrate?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>Over a multi-night exercise across open terrain, LKM-Drone classified a stabilised quadcopter from a thermal-only feed and held the track through hovering bursts and course corrections — while rejecting birds and thermal noise as discarded contacts.</p>
+
+            <div class="figrow">
+              <div class="figure">
+                <div class="fig-head mono"><span>THERMAL</span><span class="tag">CONTACT-07</span></div>
+                <div class="fig-frame" style="aspect-ratio: 4 / 3;">
+                  <img src="frontend/public/lkm-thermal-contact.png" alt="Thermal capture of a small quadcopter against night sky" />
+                  <span class="corner-class">SECRET</span>
+                  <span class="br tl"></span><span class="br tr"></span><span class="br bl"></span><span class="br brm"></span>
+                  <span class="stamp">DRONE · CONF 0.94</span>
+                </div>
+                <div class="fig-cap"><b>Plate 2 — Classified contact.</b> Thermal-only capture; quadcopter held at 0.94 confidence.</div>
+              </div>
+              <div class="figure">
+                <div class="fig-head mono"><span>RECON PLATE</span><span class="tag">SECTOR NORTH</span></div>
+                <div class="fig-frame" style="aspect-ratio: 4 / 3;">
+                  <img src="frontend/public/lkm-recon-terrain.png" alt="Overhead reconnaissance plate of the trial sector at night" />
+                  <span class="corner-class">SECRET</span>
+                  <span class="br tl"></span><span class="br tr"></span><span class="br bl"></span><span class="br brm"></span>
+                  <span class="stamp">COVERAGE · WIDE-AREA</span>
+                </div>
+                <div class="fig-cap"><b>Plate 3 — Trial sector.</b> Wide-area coverage across access road and fence line; site identity withheld.</div>
+              </div>
+            </div>
+
+            <div class="stats">
+              <div class="stat"><div class="s-b">Pixel-scale</div><div class="s-l">Detected at a few pixels</div></div>
+              <div class="stat"><div class="s-b">0.94</div><div class="s-l">Hostile-drone confidence</div></div>
+              <div class="stat"><div class="s-b">Day &amp; Night</div><div class="s-l">Thermal-only parity</div></div>
+              <div class="stat"><div class="s-b">Low FAR</div><div class="s-l">Birds &amp; noise discarded</div></div>
+            </div>
+
+            <p class="small-note">Figures describe controlled-exercise behavior on representative terrain. Operational performance varies with sensor selection, optics, geometry and environment. Quantified site results are released only under program access.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Ask about the field-trial evidence…</span><span class="send"></span></div>
+      <div class="disclaimer">SECRET // NOFORN · Need-to-know · Ghost LKM-Drone — Aerial Threat Intelligence</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PAGE 5 — Deployment & Distribution Control ============================ -->
+<div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="frontend/public/ghost-icon.png" alt="Ghost" />
+      <div class="name">Ghost<span class="sub">LKM-Drone · Field Report</span></div>
+    </div>
+    <div class="newchat"><span class="plus"></span><span>New conversation</span></div>
+    <div class="nav-label">Sections</div>
+    <div class="nav-item"><span class="ix">01</span><span>Program Overview</span></div>
+    <div class="nav-item"><span class="ix">02</span><span>Threat &amp; Detection Doctrine</span></div>
+    <div class="nav-item"><span class="ix">03</span><span>Proprietary Detection Engine</span></div>
+    <div class="nav-item"><span class="ix">04</span><span>Field Trial Results</span></div>
+    <div class="nav-item active"><span class="ix">05</span><span>Deployment &amp; Distribution Control</span></div>
+    <div class="spacer"></div>
+    <div class="classplate">
+      <div class="cl-top mono">SECRET // NOFORN</div>
+      <div class="cl-sub">Handle via need-to-know channels only · LKM-Drone Program</div>
+    </div>
+    <div class="foot"><b>Classified</b><br />Counter-UAS Field Report · 2026</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Deployment &amp; Distribution Control</div>
+      <div class="right">
+        <span class="classtag mono">SECRET // NOFORN</span>
+        <span class="meta mono">05 / 05</span>
+      </div>
+    </div>
+    <div class="thread">
+      <div class="wrap">
+        <div class="msg-user"><div class="bubble">How is LKM-Drone deployed, and how must this report be handled?</div></div>
+
+        <div class="msg-ai">
+          <div class="av"><img src="frontend/public/ghost-icon.png" alt="Ghost" /></div>
+          <div class="body">
+            <p>LKM-Drone enhances existing security investments rather than replacing them. It deploys rapidly across any combination of the sensors and platforms you already operate.</p>
+
+            <div class="chips">
+              <div class="chip"><div class="c-t">Existing surveillance cameras</div><div class="c-d">Re-use the fleet already covering your site.</div></div>
+              <div class="chip"><div class="c-t">Thermal imaging systems</div><div class="c-d">Thermal-only detection for night and zero-light.</div></div>
+              <div class="chip"><div class="c-t">Dedicated observation sensors</div><div class="c-d">Purpose-built optics for long-range sectors.</div></div>
+              <div class="chip"><div class="c-t">Tactical edge computers</div><div class="c-d">On-site inference with no cloud dependency.</div></div>
+              <div class="chip" style="grid-column: 1 / -1;"><div class="c-t">Fixed &amp; mobile command posts</div><div class="c-d">Forward positions and permanent control centers, integrated into one operational picture.</div></div>
+            </div>
+
+            <div class="kicker mono" style="margin-top:22px;">Handling &amp; Distribution Control</div>
+            <div class="chips" style="margin-top:8px;">
+              <div class="chip"><div class="c-t">Need-to-know only</div></div>
+              <div class="chip"><div class="c-t">Named recipient · no forwarding</div></div>
+              <div class="chip"><div class="c-t">No uncontrolled storage</div></div>
+              <div class="chip"><div class="c-t">Destroy after program review</div></div>
+            </div>
+
+            <div class="closer">
+              <div class="big">Ghost LKM-Drone — Aerial Threat Intelligence</div>
+              <div class="small">SECRET // NOFORN · Released on a need-to-know basis under NDA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <div class="composer"><span class="ph">Request a secured briefing for your sector…</span><span class="send"></span></div>
+      <div class="disclaimer">SECRET // NOFORN · Need-to-know · Ghost LKM-Drone — Aerial Threat Intelligence</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

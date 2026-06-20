@@ -1,0 +1,14 @@
+-- Tracks where a conversation's title came from, so the auto-naming feature
+-- never clobbers a title the operator set (or chose to keep) by hand.
+--
+--   title_source:
+--     'default' -> the date/time placeholder a brand-new conversation is born
+--                  with; safe to overwrite with an auto-generated summary.
+--     'auto'    -> a short summary the system generated from Ghost's replies;
+--                  safe to refresh as the conversation grows.
+--     'manual'  -> the operator renamed it (or it was created with a meaningful
+--                  title, e.g. an incident investigation). Never auto-named.
+--
+-- Additive column — legacy rows default to 'default' so existing conversations
+-- become eligible for a first auto-name, matching the new behaviour.
+ALTER TABLE conversations ADD COLUMN title_source TEXT NOT NULL DEFAULT 'default';
