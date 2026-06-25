@@ -20,7 +20,7 @@
 #         hosting-only deploy.
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-ghst-rashi}"
+PROJECT_ID="${PROJECT_ID:-ghst-ebb50}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MARKER="$REPO_ROOT/.cursor/skills/rashi-deploy/.last_backend_deploy"
 export PATH="$HOME/google-cloud-sdk/bin:$PATH"
@@ -80,11 +80,14 @@ else
   die "Live verify failed (root=$ROOT_CODE, app.html=$APP_CODE; expected 200/200). Check the Hosting release."
 fi
 
-# ---- 6. Sync the shared demo/admin agent ("ghostdemo") into the cloud DB ----
-# A DEMO_API_KEY rotation in frontend/src/config/demoAccess.ts is a frontend-only
-# change, so the backend-fingerprint gate above lets it through — but the cloud's
-# persistent SQLite still holds the OLD ghostdemo key, breaking legacy/admin (8+0)
-# login. Re-sync it against the live /api (idempotent; no-op when already in sync).
-say "Syncing shared demo/admin agent (ghostdemo) into the cloud DB"
-API_BASE="$TARGET" bash "$REPO_ROOT/scripts/sync-demo-admin.sh" \
-  || die "Demo/admin (ghostdemo) sync failed — legacy 8+0 login will be broken in the cloud."
+# ---- 6. Verify the shared demo/admin agent ("ghostdemo") -------------------
+# The demo key is server-side only (GHOST_DEMO_API_KEY in Secret Manager), so a
+# frontend-only deploy can't affect it. Just smoke-test that demo-admin login
+# still returns 200 against the live API.
+say "Verifying demo/admin (ghostdemo) login endpoint"
+DEMO_CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$TARGET/api/users/demo/admin-login" -H 'Content-Type: application/json' || echo 000)"
+if [ "$DEMO_CODE" = "200" ]; then
+  ok "Demo/admin (ghostdemo) login OK (200)"
+else
+  die "Demo/admin login returned HTTP $DEMO_CODE (expected 200). Run a full deploy and check GHOST_DEMO_API_KEY."
+fi

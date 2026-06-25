@@ -43,7 +43,9 @@ export default function CreateUserModal({ onSuccess, onBack }: CreateUserModalPr
       setSuccess(true);
       setTimeout(() => onSuccess(), 1200);
     } else {
-      setError("Failed to create user");
+      // Surface the real reason from the store (e.g. "Nickname 'slon' is
+      // already taken") instead of a generic message.
+      setError(useUserStore.getState().error ?? "Failed to create user");
       setIsLoading(false);
     }
   };

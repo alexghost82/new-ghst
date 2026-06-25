@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Ghost — full Firebase deploy (project: ghst-rashi)
+# Ghost — full Firebase deploy (project: ghst-ebb50)
 # ---------------------------------------------------
 # Frontend (Vite: index.html marketing + app.html operational) -> Firebase Hosting
 # Backend  (FastAPI heavy: YOLO/torch + ChromaDB + SSE)         -> Cloud Run (ghst-api)
@@ -19,8 +19,8 @@
 set -euo pipefail
 
 # ---- Config -----------------------------------------------------------------
-PROJECT_ID="${PROJECT_ID:-ghst-rashi}"
-PROJECT_DISPLAY="${PROJECT_DISPLAY:-ghst_rashi}"
+PROJECT_ID="${PROJECT_ID:-ghst-ebb50}"
+PROJECT_DISPLAY="${PROJECT_DISPLAY:-ghst}"
 REGION="${REGION:-us-central1}"
 SERVICE="${SERVICE:-ghst-api}"
 USE_GCS_VOLUME="${USE_GCS_VOLUME:-1}"          # 1 = persistent /app/data on a GCS bucket
@@ -53,11 +53,16 @@ ACTIVE_GACCOUNT="$(gcloud auth list --filter=status:ACTIVE --format='value(accou
 echo "Firebase OK | gcloud active account: $ACTIVE_GACCOUNT"
 
 # ---- 2. Project -------------------------------------------------------------
-if firebase projects:list 2>/dev/null | grep -q "$PROJECT_ID"; then
+# Treat an existing project as success. We probe via gcloud (authoritative for
+# the GCP project) and fall back to firebase's list; if creation still runs and
+# the project already exists, that "already exists" error is non-fatal.
+if gcloud projects describe "$PROJECT_ID" >/dev/null 2>&1 \
+  || firebase projects:list 2>/dev/null | grep -qw "$PROJECT_ID"; then
   say "Project $PROJECT_ID already exists"
 else
   say "Creating Firebase project $PROJECT_ID ($PROJECT_DISPLAY)"
-  firebase projects:create "$PROJECT_ID" --display-name "$PROJECT_DISPLAY"
+  firebase projects:create "$PROJECT_ID" --display-name "$PROJECT_DISPLAY" \
+    || say "Project $PROJECT_ID already exists (create skipped)"
 fi
 gcloud config set project "$PROJECT_ID" >/dev/null
 
@@ -178,6 +183,7 @@ gcloud run deploy "$SERVICE" \
 # can later verify the local backend still matches what is deployed before it
 # ships a hosting-only release. This is the source of truth for that gate.
 MARKER="$REPO_ROOT/.cursor/skills/rashi-deploy/.last_backend_deploy"
+mkdir -p "$(dirname "$MARKER")"
 if BACKEND_FP="$(bash "$REPO_ROOT/scripts/backend-fingerprint.sh" 2>/dev/null)"; then
   {
     echo "$BACKEND_FP"
@@ -203,16 +209,19 @@ sleep 3
 echo "Root status: $(curl -s -o /dev/null -w '%{http_code}' "$TARGET")"
 echo "API health : $(curl -s "$TARGET/api/health" || true)"
 
-# ---- 9b. Sync the shared demo/admin agent ("ghostdemo") into the cloud DB ----
-# The cloud SQLite (on the GCS bucket) PERSISTS across deploys and stores the
-# ghostdemo key encrypted from when it was first seeded. If DEMO_API_KEY in
-# frontend/src/config/demoAccess.ts was rotated, deploying the frontend alone
-# leaves the cloud's stored key stale → legacy/admin (8+0) login returns 401
-# "Demo access unavailable". This re-syncs it against the live /api (idempotent;
-# no-op when already in sync). MUST run on every full deploy.
-say "Syncing shared demo/admin agent (ghostdemo) into the cloud DB"
-API_BASE="$TARGET" bash "$REPO_ROOT/scripts/sync-demo-admin.sh" \
-  || die "Demo/admin (ghostdemo) sync failed — legacy 8+0 login will be broken in the cloud. Investigate before declaring the deploy done."
+# ---- 9b. Verify the shared demo/admin agent ("ghostdemo") ------------------
+# The demo OpenAI key is now SERVER-SIDE only (GHOST_DEMO_API_KEY in Secret
+# Manager, deployed in step 5). The hidden 8+0 chord and the public trial both
+# log in through dedicated backend endpoints that use that key — no client-side
+# key and no cross-env DB key-sync needed anymore. So we just smoke-test the
+# demo-admin endpoint returns 200.
+say "Verifying demo/admin (ghostdemo) login endpoint"
+DEMO_CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$TARGET/api/users/demo/admin-login" -H 'Content-Type: application/json' || echo 000)"
+if [ "$DEMO_CODE" = "200" ]; then
+  ok "Demo/admin (ghostdemo) login OK (200) — 8+0 chord + public trial will work"
+else
+  die "Demo/admin login returned HTTP $DEMO_CODE (expected 200). Check GHOST_DEMO_API_KEY in Secret Manager."
+fi
 
 echo
 say "Done. App: $TARGET  |  Operational UI: $TARGET/app.html"

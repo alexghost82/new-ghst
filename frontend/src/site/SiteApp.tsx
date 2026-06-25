@@ -276,19 +276,10 @@ export default function SiteApp() {
     (e: KeyboardEvent) => {
       if (screen !== "login") return;
 
-      // Don't hijack the lg/cu shortcut while the visitor is typing into a
-      // form field (nickname / API key on the login screen), otherwise a
-      // "c"+"u" sequence inside their input would teleport them to "create".
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
+      // NOTE: key events from form fields are intentionally NOT ignored — the
+      // c+u / l+g chords must fire even while the Agent ID input is auto-focused
+      // on load. Trade-off: typing "c" then "u" quickly inside a field also
+      // navigates to "create".
       const key = e.key.toLowerCase();
       if (key === "g" && keysPressed.has("l")) {
         goTo("login");
@@ -304,7 +295,7 @@ export default function SiteApp() {
         keysPressed.clear();
       } else {
         keysPressed.add(key);
-        setTimeout(() => keysPressed.delete(key), 600);
+        setTimeout(() => keysPressed.delete(key), 1500);
       }
     },
     [screen, goTo],

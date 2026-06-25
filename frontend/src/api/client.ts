@@ -288,6 +288,7 @@ export const api = {
       lead_phone?: string;
     },
   ) {
+    // Self-service registration: nickname + API key, no admin token required.
     return request<User>("/users", {
       method: "POST",
       body: JSON.stringify({ nickname, api_key: apiKey, ...extras }),

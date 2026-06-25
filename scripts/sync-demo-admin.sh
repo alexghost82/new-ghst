@@ -12,7 +12,7 @@
 #   FIRST time the agent is seeded — and never updates it afterwards. Each
 #   environment has its own DB:
 #     - local  → backend/data/ghost.db
-#     - cloud  → SQLite on the GCS bucket ghst-rashi-data (persists across deploys)
+#     - cloud  → SQLite on the GCS bucket ghst-ebb50-data (persists across deploys)
 #
 #   So when the key in demoAccess.ts is rotated, the LOCAL db gets fixed (we
 #   tested against it), but the CLOUD db keeps the OLD key → legacy/admin login
@@ -38,7 +38,7 @@
 #
 set -euo pipefail
 
-API_BASE="${API_BASE:-https://ghst-rashi.web.app}"
+API_BASE="${API_BASE:-https://ghst-ebb50.web.app}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEMO_FILE="$REPO_ROOT/frontend/src/config/demoAccess.ts"
 

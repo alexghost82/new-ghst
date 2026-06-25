@@ -260,7 +260,7 @@ ghst_rashi/
 
 ### פריסה (Deployment)
 
-- **Frontend** → Firebase Hosting (`frontend/dist`), project `ghst-rashi`.
+- **Frontend** → Firebase Hosting (`frontend/dist`), project `ghst-ebb50`.
 - **Backend** → Cloud Run service `ghst-api` (region `us-central1`).
 - `firebase.json` עושה rewrite של `/api/**` ו-`/uploads/**` ל-Cloud Run,
   `/app` → `app.html`, וכל השאר → `index.html` (האתר השיווקי).
@@ -289,7 +289,7 @@ ghst_rashi/
 collages) כספריות סטטיות.
 
 **CORS** — מתיר `http://localhost:8765`, `localhost:8888` (HTTP+HTTPS),
-ו-`https://ghst-rashi.web.app` / `.firebaseapp.com`. בפרודקשן ה-frontend
+ו-`https://ghst-ebb50.web.app` / `.firebaseapp.com`. בפרודקשן ה-frontend
 וה-API חולקים origin דרך rewrites של Firebase Hosting, כך ש-CORS משמש בעיקר
 כרשת ביטחון (גישה ישירה ל-Cloud Run / preview channels).
 
@@ -1018,7 +1018,7 @@ npm run dev            # vite על http://localhost:8888
 
 ### Deploy לענן
 
-- `firebase deploy` (project `ghst-rashi`) מעלה את `frontend/dist` ל-Hosting;
+- `firebase deploy` (project `ghst-ebb50`) מעלה את `frontend/dist` ל-Hosting;
   `/api/**` ו-`/uploads/**` מנותבים ל-Cloud Run service `ghst-api`
   (us-central1) דרך rewrites ב-`firebase.json`.
 - ה-backend הכבד (torch/YOLO + ChromaDB + SSE) רץ כ-container ב-Cloud Run.

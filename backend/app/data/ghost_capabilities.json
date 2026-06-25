@@ -3,12 +3,12 @@
   "_source": "frontend/src/data/capabilities.ts",
   "page": {
     "en": {
-      "title": "What Ghost can do",
-      "subtitle": "A simple, visual walkthrough of every action — explained so an 8-year-old gets it, and shown with the real interface."
+      "title": "Everything you can ask your cameras to do.",
+      "subtitle": "Ghost turns the cameras you already own into an operator you can talk to. Ask in plain words, get an answer, and let it watch for the exceptions on its own."
     },
     "he": {
-      "title": "מה Ghost יודע לעשות",
-      "subtitle": "מדריך פשוט וויזואלי לכל פעולה — מוסבר כך שילד בן 8 יבין, ומוצג עם הממשק האמיתי."
+      "title": "כל מה שאפשר לבקש מהמצלמות שלך לעשות.",
+      "subtitle": "Ghost הופך את המצלמות שכבר יש לך לקצין מבצעים שאפשר לדבר איתו. שואלים במילים פשוטות, מקבלים תשובה, ונותנים לו לשמור על החריגים בעצמו."
     }
   },
   "capabilities": [
@@ -16,21 +16,21 @@
       "id": "chat",
       "copy": {
         "en": {
-          "title": "Ask your camera anything",
-          "simple": "Open a new chat and just talk to it like a friend. Type a question, and Ghost looks at the picture and answers in plain words — no buttons, no menus.",
+          "title": "Talk to your cameras in plain language.",
+          "simple": "Type a question the way you'd say it out loud, and Ghost answers from what the cameras actually see — no query language, no rules engine.",
           "steps": [
-            "Press the + button to open a new chat.",
-            "Type your question, like “Is there a bag left on the ground by the guard booth, and is anyone at the window?”",
-            "Ghost reads the live picture and writes back what it understands."
+            "Open any camera or your whole site and write a question.",
+            "Ghost reads the live frames and answers in seconds.",
+            "Follow up naturally — it keeps the context of the conversation."
           ]
         },
         "he": {
-          "title": "אפשר לשאול את המצלמה כל דבר",
-          "simple": "פותחים שיחה חדשה ופשוט מדברים איתה כמו עם חבר. כותבים שאלה, ו-Ghost מסתכל על התמונה ועונה במילים פשוטות — בלי כפתורים ובלי תפריטים.",
+          "title": "מדברים עם המצלמות בשפה חופשית.",
+          "simple": "כותבים שאלה כמו שהיו אומרים אותה בקול, ו-Ghost עונה ממה שהמצלמות באמת רואות — בלי שפת שאילתות ובלי מנוע חוקים.",
           "steps": [
-            "לוחצים על כפתור ה-+ כדי לפתוח שיחה חדשה.",
-            "כותבים שאלה, למשל “האם הושאר תיק על הרצפה ליד עמדת השומר, והאם מישהו עומד ליד החלון?”",
-            "Ghost קורא את התמונה החיה וכותב בחזרה מה הוא מבין."
+            "פותחים מצלמה אחת או את כל האתר וכותבים שאלה.",
+            "Ghost קורא את הפריימים החיים ועונה תוך שניות.",
+            "ממשיכים לשאול באופן טבעי — הוא זוכר את הקשר השיחה."
           ]
         }
       }
@@ -39,159 +39,21 @@
       "id": "cameras",
       "copy": {
         "en": {
-          "title": "Plug a camera into the chat",
-          "simple": "A chat can watch through one camera or many — your phone camera right now (live), or cameras you saved before (fixed). Whatever they see, you can ask about.",
+          "title": "Every camera, understood — not just streamed.",
+          "simple": "Bring your existing feeds into one view where each frame is understood in context, so you see what matters instead of staring at a wall of screens.",
           "steps": [
-            "Open the camera menu and pick a camera.",
-            "Choose live (watch right now) or a saved camera.",
-            "The feed appears above the chat, and now your questions are about what it sees."
+            "Connect the cameras you already have over standard streams.",
+            "Ghost watches each feed and surfaces the scenes worth your attention.",
+            "Jump straight to the moment it flagged, with the frame attached."
           ]
         },
         "he": {
-          "title": "מחברים מצלמה לשיחה",
-          "simple": "שיחה יכולה להסתכל דרך מצלמה אחת או הרבה — המצלמה של הטלפון עכשיו (לייב), או מצלמות ששמרת מראש (קבועות). מה שהן רואות, אפשר לשאול עליו.",
+          "title": "כל מצלמה — מובנת, לא רק משודרת.",
+          "simple": "מחברים את המצלמות הקיימות לתצוגה אחת שבה כל פריים מובן בהקשר, כך שרואים את מה שחשוב במקום לבהות בקיר מסכים.",
           "steps": [
-            "פותחים את תפריט המצלמות ובוחרים מצלמה.",
-            "בוחרים לייב (לראות עכשיו) או מצלמה שמורה.",
-            "הווידאו מופיע מעל השיחה, ועכשיו השאלות שלך הן על מה שהיא רואה."
-          ]
-        }
-      }
-    },
-    {
-      "id": "organize",
-      "copy": {
-        "en": {
-          "title": "Reach any camera in three clicks",
-          "simple": "Your cameras live in a chat list, just like WhatsApp — so you reach any one of them in about three clicks, even across sites in different countries with hundreds of cameras. Group them into Areas (a site or big zone) and Groups inside them, then drag each camera-chat into place.",
-          "steps": [
-            "Press “Add area” and name a big zone, like “North Yard”.",
-            "Inside it, press + to add a group, like “Gates”.",
-            "Drag a camera-chat in — now it’s three clicks away: North Yard → Gates → Main Gate."
-          ]
-        },
-        "he": {
-          "title": "מגיעים לכל מצלמה בשלוש לחיצות",
-          "simple": "המצלמות שלך יושבות ברשימת שיחות, בדיוק כמו WhatsApp — כך שמגיעים לכל אחת מהן בערך בשלוש לחיצות, גם כשיש מפעלים בכמה מדינות ומאות מצלמות. מקבצים אותן ל“אזורים” (אתר או אזור גדול) ול“קבוצות” בתוכם, וגוררים כל שיחת-מצלמה למקום.",
-          "steps": [
-            "לוחצים “הוסף איזור” ונותנים שם לאזור גדול, כמו “חצר צפונית”.",
-            "בתוכו לוחצים + כדי להוסיף קבוצה, כמו “שערים”.",
-            "גוררים שיחת-מצלמה פנימה — ועכשיו היא במרחק שלוש לחיצות: חצר צפונית ← שערים ← שער ראשי."
-          ]
-        }
-      }
-    },
-    {
-      "id": "systemPrompt",
-      "copy": {
-        "en": {
-          "title": "Tell Ghost what to care about",
-          "simple": "A system prompt is a little note you give Ghost so it knows its job for this chat — like “You guard the parking lot. Flag anyone leaning into a car window or working a door handle.” It remembers this every time it answers.",
-          "steps": [
-            "Open the chat settings (the sliders icon).",
-            "Write what this camera should focus on.",
-            "Save — now every answer follows your instructions."
-          ]
-        },
-        "he": {
-          "title": "אומרים ל-Ghost על מה לשים לב",
-          "simple": "הנחיית מערכת היא פתק קטן שנותנים ל-Ghost כדי שידע מה התפקיד שלו בשיחה הזו — למשל “אתה שומר על החניון. דווח על כל מי שנשען לתוך חלון רכב או מתעסק עם ידית דלת.” הוא זוכר את זה בכל תשובה.",
-          "steps": [
-            "פותחים את הגדרות השיחה (אייקון הסליידרים).",
-            "כותבים על מה המצלמה הזו צריכה להתמקד.",
-            "שומרים — ועכשיו כל תשובה הולכת לפי ההוראות שלך."
-          ]
-        }
-      }
-    },
-    {
-      "id": "memory",
-      "copy": {
-        "en": {
-          "title": "Ghost remembers what it saw",
-          "simple": "Ghost keeps a little notebook. “Tracking” lists every person and vehicle it spotted. “Observations” are short notes about them. “Facts” are things it learned and should remember. You can read the notebook any time.",
-          "steps": [
-            "Open the memory panel (the brain icon).",
-            "Turn on tracking so Ghost logs people and vehicles.",
-            "Switch tabs to read observations and saved facts."
-          ]
-        },
-        "he": {
-          "title": "Ghost זוכר מה שהוא ראה",
-          "simple": "ל-Ghost יש מחברת קטנה. “מעקב” מפרט כל אדם ורכב שהבחין בהם. “תצפיות” הן הערות קצרות עליהם. “עובדות” הן דברים שלמד וכדאי לזכור. אפשר לקרוא במחברת בכל רגע.",
-          "steps": [
-            "פותחים את פאנל הזיכרון (אייקון המוח).",
-            "מדליקים מעקב כדי ש-Ghost ירשום אנשים ורכבים.",
-            "מחליפים טאבים כדי לקרוא תצפיות ועובדות שמורות."
-          ]
-        }
-      }
-    },
-    {
-      "id": "siteScan",
-      "copy": {
-        "en": {
-          "title": "One button to read the whole place",
-          "simple": "Tap the scan button and Ghost takes one good look at everything in the picture and writes a full report — what’s normal, and what looks off. Like a quick safety check of the room.",
-          "steps": [
-            "Make sure the chat has a saved camera.",
-            "Press the scan (eye) button in the header.",
-            "Read the report Ghost writes about the whole scene."
-          ]
-        },
-        "he": {
-          "title": "כפתור אחד שקורא את כל המקום",
-          "simple": "לוחצים על כפתור הסריקה ו-Ghost מסתכל מבט אחד טוב על כל מה שבתמונה וכותב דוח מלא — מה תקין ומה נראה חריג. כמו בדיקת בטיחות מהירה של החדר.",
-          "steps": [
-            "מוודאים שלשיחה יש מצלמה שמורה.",
-            "לוחצים על כפתור הסריקה (העין) בכותרת.",
-            "קוראים את הדוח ש-Ghost כותב על כל הסביבה."
-          ]
-        }
-      }
-    },
-    {
-      "id": "history",
-      "copy": {
-        "en": {
-          "title": "Who was here? What happened?",
-          "simple": "Ghost doesn’t forget. You can ask about earlier today or last night — “When did those boxes pile up in front of the emergency exit?” — and it answers from what it saw and wrote down, with the time.",
-          "steps": [
-            "Open any chat that watched a camera.",
-            "Ask a “who / what / when” question about the past.",
-            "Ghost answers using its saved observations and timestamps."
-          ]
-        },
-        "he": {
-          "title": "מי היה כאן? מה קרה?",
-          "simple": "Ghost לא שוכח. אפשר לשאול על מה שקרה מוקדם יותר היום או אתמול בלילה — “מתי הארגזים האלה נערמו מול יציאת החירום?” — והוא עונה ממה שראה ורשם, עם השעה.",
-          "steps": [
-            "פותחים שיחה שצפתה במצלמה.",
-            "שואלים שאלת “מי / מה / מתי” על העבר.",
-            "Ghost עונה לפי התצפיות והשעות שרשם."
-          ]
-        }
-      }
-    },
-    {
-      "id": "broadcast",
-      "copy": {
-        "en": {
-          "title": "Ask many cameras at once",
-          "simple": "Click an area or group name and you talk to all its cameras together. One question — “Anywhere in the yard, is something left blocking a door, exit, or the barrier?” — and Ghost checks every camera in that zone and answers as one.",
-          "steps": [
-            "Click the name of an area or group (or the radio icon).",
-            "Type one question for the whole zone.",
-            "Ghost looks through every camera there and replies."
-          ]
-        },
-        "he": {
-          "title": "לשאול הרבה מצלמות בבת אחת",
-          "simple": "לוחצים על שם של אזור או קבוצה ומדברים עם כל המצלמות שלו יחד. שאלה אחת — “בכל החצר, האם משהו חוסם דלת, יציאה או את המחסום?” — ו-Ghost בודק כל מצלמה באזור ועונה כאחד.",
-          "steps": [
-            "לוחצים על שם של אזור או קבוצה (או על אייקון הרדיו).",
-            "כותבים שאלה אחת לכל האזור.",
-            "Ghost מסתכל בכל המצלמות שם ועונה."
+            "מחברים את המצלמות שכבר יש לכם בשידורים סטנדרטיים.",
+            "Ghost צופה בכל מקור ומציף את הסצנות שראויות לתשומת לבכם.",
+            "קופצים ישר לרגע שסומן, עם הפריים מצורף."
           ]
         }
       }
@@ -200,21 +62,159 @@
       "id": "alerts",
       "copy": {
         "en": {
-          "title": "Give each chat its own watch rules",
-          "simple": "For every camera-chat you can write rules like “Flag anyone reaching over the perimeter fence after the site closes.” Turn alert mode on, and Ghost watches by itself and shouts only when your rule happens.",
+          "title": "Get told only when it actually matters.",
+          "simple": "Describe the exception you care about once, and Ghost raises an alert only when that exact situation appears — with the frame that proves it.",
           "steps": [
-            "Open the alert panel (the shield icon).",
-            "Write a rule in plain words and turn it on.",
-            "Flip alert mode on — Ghost watches and alerts you."
+            "Write the condition in plain words, per zone or per camera.",
+            "Ghost runs it continuously and stays silent until it's met.",
+            "When it fires, you get the alert with the evidence frame attached."
           ]
         },
         "he": {
-          "title": "נותנים לכל שיחה כללי שמירה משלה",
-          "simple": "לכל שיחת-מצלמה אפשר לכתוב כללים כמו “תתריע על מישהו שמושיט יד מעבר לגדר ההיקפית אחרי סגירת האתר.” מדליקים מצב התראה, ו-Ghost שומר לבד וצועק רק כשהכלל שלך קורה.",
+          "title": "מקבלים עדכון רק כשזה באמת משנה.",
+          "simple": "מתארים פעם אחת את החריג שחשוב לכם, ו-Ghost מעלה התרעה רק כשהמצב הזה בדיוק מופיע — עם הפריים שמוכיח אותו.",
           "steps": [
-            "פותחים את פאנל ההתראות (אייקון המגן).",
-            "כותבים כלל במילים פשוטות ומדליקים אותו.",
-            "מפעילים מצב התראה — Ghost שומר ומתריע לך."
+            "כותבים את התנאי במילים פשוטות, לכל אזור או מצלמה.",
+            "Ghost מריץ אותו ברצף ושותק עד שהוא מתקיים.",
+            "כשהוא נדלק, מקבלים את ההתרעה עם פריים הוכחה מצורף."
+          ]
+        }
+      }
+    },
+    {
+      "id": "history",
+      "copy": {
+        "en": {
+          "title": "Ask what happened, not which tape to scrub.",
+          "simple": "Instead of scrubbing hours of footage, ask Ghost what happened in a window of time and it answers with the moments that match.",
+          "steps": [
+            "Ask about a camera, a zone or a time range in plain words.",
+            "Ghost reviews the recorded frames and returns the matches.",
+            "Open any result to see the exact frame and what it found."
+          ]
+        },
+        "he": {
+          "title": "שואלים מה קרה, לא איזו הקלטה לגלול.",
+          "simple": "במקום לגלול שעות של צילום, שואלים את Ghost מה קרה בחלון זמן והוא עונה עם הרגעים שמתאימים.",
+          "steps": [
+            "שואלים על מצלמה, אזור או טווח זמן במילים פשוטות.",
+            "Ghost סוקר את הפריימים המוקלטים ומחזיר את ההתאמות.",
+            "פותחים כל תוצאה כדי לראות את הפריים המדויק ומה נמצא."
+          ]
+        }
+      }
+    },
+    {
+      "id": "broadcast",
+      "copy": {
+        "en": {
+          "title": "One question, every camera answers.",
+          "simple": "Send the same question to a whole group of cameras and get a single, consolidated answer instead of checking each one by hand.",
+          "steps": [
+            "Pick a group of cameras or your entire site.",
+            "Ask one question and Ghost runs it across all of them.",
+            "Read one summary, then drill into any camera that stood out."
+          ]
+        },
+        "he": {
+          "title": "שאלה אחת, כל המצלמות עונות.",
+          "simple": "שולחים את אותה שאלה לקבוצה שלמה של מצלמות ומקבלים תשובה אחת מאוחדת במקום לבדוק כל אחת ביד.",
+          "steps": [
+            "בוחרים קבוצת מצלמות או את כל האתר.",
+            "שואלים שאלה אחת ו-Ghost מריץ אותה על כולן.",
+            "קוראים סיכום אחד, ואז צוללים לכל מצלמה שבלטה."
+          ]
+        }
+      }
+    },
+    {
+      "id": "siteScan",
+      "copy": {
+        "en": {
+          "title": "A live read of the entire site, on demand.",
+          "simple": "Ask for the state of everything at once and Ghost sweeps every camera to give you a single situational picture of the site right now.",
+          "steps": [
+            "Trigger a site scan from one place.",
+            "Ghost reads every connected feed in one pass.",
+            "Get a single status picture with anything unusual called out."
+          ]
+        },
+        "he": {
+          "title": "קריאה חיה של כל האתר, לפי דרישה.",
+          "simple": "מבקשים את מצב הכול בבת אחת ו-Ghost סורק כל מצלמה כדי לתת לכם תמונת מצב אחת של האתר ממש עכשיו.",
+          "steps": [
+            "מפעילים סריקת אתר ממקום אחד.",
+            "Ghost קורא כל מקור מחובר במעבר אחד.",
+            "מקבלים תמונת מצב אחת עם כל חריג מסומן."
+          ]
+        }
+      }
+    },
+    {
+      "id": "organize",
+      "copy": {
+        "en": {
+          "title": "Group cameras the way your site is built.",
+          "simple": "Arrange cameras into zones, floors or sites so you can ask questions and set alerts for a whole area at once instead of camera by camera.",
+          "steps": [
+            "Group your cameras into zones and sites in a simple tree.",
+            "Ask questions or set alerts at the group level.",
+            "Reorganize any time — the structure follows how you operate."
+          ]
+        },
+        "he": {
+          "title": "מקבצים מצלמות בדיוק כמו שהאתר בנוי.",
+          "simple": "מסדרים מצלמות לאזורים, קומות או אתרים כדי לשאול שאלות ולהגדיר התרעות לאזור שלם בבת אחת, במקום מצלמה־מצלמה.",
+          "steps": [
+            "מקבצים את המצלמות לאזורים ואתרים בעץ פשוט.",
+            "שואלים שאלות או מגדירים התרעות ברמת הקבוצה.",
+            "מארגנים מחדש בכל רגע — המבנה הולך לפי איך שאתם עובדים."
+          ]
+        }
+      }
+    },
+    {
+      "id": "systemPrompt",
+      "copy": {
+        "en": {
+          "title": "Tell Ghost how to think about your site.",
+          "simple": "Give Ghost standing instructions — what to prioritize, what to ignore, how to phrase answers — and it applies them to everything it watches.",
+          "steps": [
+            "Write your site's standing instructions in plain language.",
+            "Ghost applies them to every question, scan and alert.",
+            "Update the instructions whenever your priorities change."
+          ]
+        },
+        "he": {
+          "title": "אומרים ל-Ghost איך לחשוב על האתר שלכם.",
+          "simple": "נותנים ל-Ghost הוראות קבע — מה לתעדף, מה להתעלם ממנו, איך לנסח תשובות — והוא מיישם אותן על כל מה שהוא צופה בו.",
+          "steps": [
+            "כותבים את הוראות הקבע של האתר בשפה חופשית.",
+            "Ghost מיישם אותן על כל שאלה, סריקה והתרעה.",
+            "מעדכנים את ההוראות בכל פעם שהעדיפויות משתנות."
+          ]
+        }
+      }
+    },
+    {
+      "id": "memory",
+      "copy": {
+        "en": {
+          "title": "Ghost keeps what matters about your site.",
+          "simple": "Ghost holds on to the context you give it — recurring people, vehicles and routines — so its answers get sharper the longer it runs.",
+          "steps": [
+            "Tell Ghost the facts and routines that define your site.",
+            "It keeps them as memory and uses them in every answer.",
+            "Review or edit what it remembers at any time."
+          ]
+        },
+        "he": {
+          "title": "Ghost שומר את מה שחשוב על האתר שלכם.",
+          "simple": "Ghost מחזיק את ההקשר שאתם נותנים לו — דמויות, כלים ושגרות חוזרות — כך שהתשובות שלו מתחדדות ככל שהוא רץ זמן רב יותר.",
+          "steps": [
+            "מספרים ל-Ghost את העובדות והשגרות שמגדירות את האתר.",
+            "הוא שומר אותן כזיכרון ומשתמש בהן בכל תשובה.",
+            "סוקרים או עורכים את מה שהוא זוכר בכל רגע."
           ]
         }
       }

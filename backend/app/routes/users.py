@@ -32,12 +32,11 @@ logger = logging.getLogger("ghost.routes.users")
 router = APIRouter(tags=["users"])
 
 
-@router.post("/users", dependencies=[Depends(require_admin)])
+@router.post("/users")
 async def create_user_endpoint(req: CreateUserRequest):
-    # Operator provisioning is now admin-gated: only the owner (via the admin
-    # panel / X-Ghost-Admin-Token) can create accounts directly. The public
-    # demo/trial funnel uses the dedicated /users/demo/trial endpoint and is
-    # unaffected.
+    # Self-service operator provisioning: a visitor creates an account with a
+    # nickname + their own API key (bring-your-own-key). The public demo/trial
+    # funnel uses the dedicated /users/demo/trial endpoint.
     db = get_db()
     try:
         user = create_user(
