@@ -7,7 +7,7 @@ Local-first AI chat platform for Ghost employees with advanced memory engine, kn
 - **Frontend**: React 19 + Vite + TypeScript + Tailwind CSS + Zustand
 - **Backend**: Python 3.9+, FastAPI, Pydantic v2, Uvicorn
 - **Database**: SQLite (core data) + ChromaDB (vector embeddings)
-- **AI**: OpenAI API (chat: gpt-4o, embeddings: text-embedding-3-small)
+- **AI**: OpenAI API (chat: gpt-4o, embeddings: text-embedding-3-small). Optional [local VLM](./docs/local-vlm.md) for on-prem or GPU-hosted vision.
 
 ## Quick Start
 
@@ -73,3 +73,4 @@ bash scripts/check-secrets.sh
 - Conversation memory engine (automatic fact/preference extraction)
 - Knowledge base (PDF, DOCX, TXT, JSON upload with semantic search)
 - Memory + Knowledge context injection into every prompt
+- Optional local VLM provider (vLLM, Ollama, or Cloud Run GPU) — off by default; see [docs/local-vlm.md](./docs/local-vlm.md)
