@@ -143,6 +143,56 @@ class Settings(BaseSettings):
     vision_image_detail: str = "high"
 
     # ------------------------------------------------------------------
+    # Vision provider — collage / tracking analysis backend.
+    # ``openai`` uses the operator API key; ``local_vlm`` targets a
+    # self-hosted OpenAI-compatible endpoint; ``auto`` tries local first
+    # when enabled and falls back to OpenAI on failure.
+    # ------------------------------------------------------------------
+    vision_provider: str = Field(
+        default="openai",
+        validation_alias=AliasChoices(
+            "GHOST_VISION_PROVIDER",
+            "VISION_PROVIDER",
+            "vision_provider",
+        ),
+    )
+    local_vlm_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "LOCAL_VLM_ENABLED",
+            "local_vlm_enabled",
+        ),
+    )
+    local_vlm_base_url: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "LOCAL_VLM_BASE_URL",
+            "local_vlm_base_url",
+        ),
+    )
+    local_vlm_model: str = Field(
+        default="Qwen/Qwen3-VL-8B-Instruct",
+        validation_alias=AliasChoices(
+            "LOCAL_VLM_MODEL",
+            "local_vlm_model",
+        ),
+    )
+    local_vlm_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "LOCAL_VLM_API_KEY",
+            "local_vlm_api_key",
+        ),
+    )
+    local_vlm_timeout_seconds: float = Field(
+        default=60.0,
+        validation_alias=AliasChoices(
+            "LOCAL_VLM_TIMEOUT_SECONDS",
+            "local_vlm_timeout_seconds",
+        ),
+    )
+
+    # ------------------------------------------------------------------
     # Alert pipeline — latency-tuned defaults.
     #
     # Alerts are a binary "is this rule satisfied?" check, not a forensic
