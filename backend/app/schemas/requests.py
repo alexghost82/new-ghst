@@ -368,3 +368,14 @@ class TrackDownloadRequest(BaseModel):
     name: Optional[str] = Field(None, max_length=200)
     company: Optional[str] = Field(None, max_length=200)
     file: Optional[str] = Field(None, max_length=256)
+
+
+class LocalVisionAnalyzeRequest(BaseModel):
+    """Standalone frame analysis via local VLM with optional OpenAI fallback."""
+
+    user_id: str = Field(..., min_length=1)
+    image_base64: str = Field(..., min_length=1, max_length=MAX_IMAGE_BASE64_LEN)
+    prompt: Optional[str] = Field(None, max_length=8000)
+    conversation_id: Optional[str] = Field(None, min_length=1)
+    camera_id: Optional[str] = Field(None, min_length=1, max_length=256)
+    provider: Optional[Literal["openai", "local_vlm", "auto"]] = None

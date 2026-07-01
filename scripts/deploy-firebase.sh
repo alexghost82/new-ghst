@@ -157,6 +157,13 @@ say "Regenerating Ghost capabilities knowledge (frontend -> backend JSON)"
 ( cd "$REPO_ROOT/frontend" && npm install && npm run gen:knowledge )
 
 # ---- 7. Deploy backend to Cloud Run -----------------------------------------
+# Optional local VLM (GPU ghost-vlm + LOCAL_VLM_* on ghst-api): deploy VLM first with
+#   bash scripts/deploy-ghost-vlm.sh
+# then either bash scripts/deploy-ghost-api.sh (VLM-aware ghst-api) or set DEPLOY_VLM=1
+# below to skip this step when ghst-api was already deployed by deploy-ghost-api.sh.
+if [ "${DEPLOY_VLM:-0}" = "1" ]; then
+  say "DEPLOY_VLM=1 — skipping ghst-api deploy (use scripts/deploy-ghost-api.sh output)"
+else
 say "Deploying backend to Cloud Run ($SERVICE) — first build is slow (torch/Chroma)"
 gcloud run deploy "$SERVICE" \
   --source "$REPO_ROOT/backend" \
@@ -176,6 +183,7 @@ gcloud run deploy "$SERVICE" \
     printf '%s' "$s"
   )" \
   "${VOLUME_ARGS[@]}"
+fi
 
 # ---- 7b. Record the deployed backend fingerprint ----------------------------
 # After a successful Cloud Run deploy, the local backend source IS what now runs

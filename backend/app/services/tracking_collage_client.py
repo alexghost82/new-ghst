@@ -10,14 +10,9 @@ Always returns ``{"tiles": list[dict]}``. Never raises.
 
 from __future__ import annotations
 
-import base64
-import json
 import logging
 
-from openai import AsyncOpenAI
-
-from app.config import settings
-from app.services.openai_client import _completion_kwargs
+from app.services.vision_provider import analyze_with_fallback
 
 logger = logging.getLogger("ghost.tracking_collage")
 
@@ -244,10 +239,7 @@ async def analyze_tracking_collage(
 
     if not image_bytes:
         return safe_default
-    if not api_key:
-        return {"tiles": [], "error": "missing_api_key"}
 
-    encoded = base64.b64encode(image_bytes).decode("ascii")
     prompt_template = _select_prompt(locale)
     prompt = prompt_template.format(
         camera_label=camera_label or "(unspecified)",
@@ -256,55 +248,14 @@ async def analyze_tracking_collage(
         rows=int(rows),
     )
 
-    chosen_model = model or settings.vision_model
-    detail = settings.vision_image_detail or "high"
-    if detail not in ("low", "high", "auto"):
-        detail = "high"
-
-    client = AsyncOpenAI(api_key=api_key)
-    try:
-        response = await client.chat.completions.create(
-            **_completion_kwargs(
-                model=chosen_model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{encoded}",
-                                    "detail": detail,
-                                },
-                            },
-                        ],
-                    }
-                ],
-                temperature=0.1,
-                max_tokens=4000,
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": TRACKING_COLLAGE_SCHEMA,
-                },
-            )
-        )
-    except Exception as err:
-        logger.exception("Tracking collage analysis failed")
-        return {"tiles": [], "error": str(err)[:160] or "request_failed"}
-
-    raw = response.choices[0].message.content or "{}"
-    try:
-        parsed = json.loads(raw)
-    except json.JSONDecodeError:
-        logger.exception(
-            "Tracking collage returned invalid JSON: %r", raw[:500]
-        )
-        return {"tiles": [], "error": "invalid_json"}
-
-    if not isinstance(parsed, dict):
-        return safe_default
-    tiles = parsed.get("tiles")
-    if not isinstance(tiles, list):
-        return safe_default
-    return {"tiles": tiles}
+    return await analyze_with_fallback(
+        image_bytes=image_bytes,
+        prompt=prompt,
+        model=model,
+        api_key=api_key,
+        locale=locale,
+        tile_count=tile_count,
+        cols=cols,
+        rows=rows,
+        camera_label=camera_label,
+    )

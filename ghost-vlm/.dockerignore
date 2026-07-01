@@ -1,0 +1,42 @@
+# Never ship model weights or large artifacts
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.gguf
+*.ckpt
+models/
+checkpoints/
+weights/
+.huggingface/
+cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Secrets and local env
+.env
+.env.*
+*.pem
+*.key
+
+# VCS and editor noise
+.git/
+.gitignore
+.vscode/
+.cursor/
+# Large media / docs unrelated to the container build context
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp4
+*.mov
+*.zip
+*.tar
+*.tar.gz
+*.tgz

@@ -20,7 +20,9 @@ import { useConversationStore } from "../../stores/conversationStore";
 import { useUserStore } from "../../stores/userStore";
 import { useDetectionStore } from "../../stores/detectionStore";
 import { useLiveStore } from "../../stores/liveStore";
+import { useVisionProviderStore, type VisionProvider } from "../../stores/visionProviderStore";
 import { api } from "../../api/client";
+import type { LocalVisionAnalyzeResult } from "../../api/client";
 import type {
   DetectedObject,
   MemoryItem,
@@ -30,6 +32,7 @@ import type {
 } from "../../types/api";
 import { useT } from "../../utils/i18n";
 import { confirmDialog, toast } from "../../stores/feedbackStore";
+import { captureFrame } from "../../utils/cameraCapture";
 
 interface MemoryPanelProps {
   onClose: () => void;
@@ -89,6 +92,28 @@ const detectedTypeColors: Record<string, string> = {
   animal: "bg-amber-700/20 text-amber-600",
   object: "bg-yellow-700/20 text-yellow-600",
 };
+
+const VISION_PROVIDER_OPTIONS: { key: VisionProvider; label: string }[] = [
+  { key: "openai", label: "OpenAI" },
+  { key: "local_vlm", label: "Local VLM" },
+  { key: "auto", label: "אוטו" },
+];
+
+async function framePathToBase64(path: string): Promise<string> {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error("frame_fetch_failed");
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const comma = dataUrl.indexOf(",");
+      resolve(comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl);
+    };
+    reader.onerror = () => reject(new Error("frame_read_failed"));
+    reader.readAsDataURL(blob);
+  });
+}
 
 function formatHHMM(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -198,6 +223,11 @@ export default function MemoryPanel({ onClose }: MemoryPanelProps) {
   const [batchSizeDraft, setBatchSizeDraft] = useState<string>("");
   const [batchSizeError, setBatchSizeError] = useState<string | null>(null);
 
+  const [visionAnalyzing, setVisionAnalyzing] = useState(false);
+  const [visionResult, setVisionResult] = useState<LocalVisionAnalyzeResult | null>(null);
+  const [visionError, setVisionError] = useState<string | null>(null);
+  const [visionNoFrame, setVisionNoFrame] = useState(false);
+
   const isLoadingTracking = useDetectionStore((s) =>
     activeConversationId
       ? !!s.isLoading[activeConversationId]
@@ -207,6 +237,9 @@ export default function MemoryPanel({ onClose }: MemoryPanelProps) {
 
   const toggleTracking = useDetectionStore((s) => s.toggleTracking);
   const fetchDetected = useDetectionStore((s) => s.fetchObjects);
+  const getActiveCameras = useLiveStore((s) => s.getActiveCameras);
+  const visionProvider = useVisionProviderStore((s) => s.provider);
+  const setVisionProvider = useVisionProviderStore((s) => s.setProvider);
   const hasCameraConfigured = useLiveStore((s) => {
     if (!activeConversationId) return false;
     if ((s.liveConversations[activeConversationId] ?? []).length > 0)
@@ -404,6 +437,66 @@ export default function MemoryPanel({ onClose }: MemoryPanelProps) {
       activeUserId,
       !trackingEnabled,
     );
+  };
+
+  const resolveAnalyzeFrame = async (): Promise<{
+    imageBase64: string;
+    cameraId?: string;
+  } | null> => {
+    if (!activeConversationId) return null;
+
+    const cameras = getActiveCameras(activeConversationId);
+    if (cameras.length > 0) {
+      try {
+        const imageBase64 = await captureFrame(cameras[0].device_id);
+        return { imageBase64, cameraId: cameras[0].device_id };
+      } catch {
+        // Fall through to detection frame thumbnail.
+      }
+    }
+
+    const latestWithFrame = detectedObjects.find(
+      (o) => o.frame_path && o.frame_path.startsWith("/api/"),
+    );
+    if (latestWithFrame?.frame_path) {
+      try {
+        const imageBase64 = await framePathToBase64(latestWithFrame.frame_path);
+        return { imageBase64 };
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  };
+
+  const handleAnalyzeFrame = async () => {
+    if (!activeUserId || visionAnalyzing) return;
+    setVisionError(null);
+    setVisionNoFrame(false);
+    setVisionResult(null);
+
+    const frame = await resolveAnalyzeFrame();
+    if (!frame) {
+      setVisionNoFrame(true);
+      return;
+    }
+
+    setVisionAnalyzing(true);
+    const res = await api.analyzeLocalVision({
+      user_id: activeUserId,
+      image_base64: frame.imageBase64,
+      conversation_id: activeConversationId ?? undefined,
+      camera_id: frame.cameraId,
+      provider: visionProvider,
+    });
+    setVisionAnalyzing(false);
+
+    if (!res.ok || !res.data) {
+      setVisionError(res.error?.message ?? "ניתוח הפריים נכשל");
+      return;
+    }
+    setVisionResult(res.data);
   };
 
   const renderTrackingTab = () => {
@@ -654,6 +747,90 @@ export default function MemoryPanel({ onClose }: MemoryPanelProps) {
               </span>
             )}
           </div>
+        </div>
+
+        {/* Vision provider — manual frame analyze */}
+        <div className="bg-ghost-surface rounded-lg p-2.5 border border-ghost-border-subtle space-y-2">
+          <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-ghost-text-muted block">
+            ספק ניתוח חזותי
+          </span>
+          <div className="flex gap-1 flex-wrap">
+            {VISION_PROVIDER_OPTIONS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setVisionProvider(key)}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors duration-75 ${
+                  visionProvider === key
+                    ? "bg-ghost-accent/20 text-ghost-accent"
+                    : "bg-ghost-surface-hover text-ghost-text-muted hover:text-ghost-text-secondary"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => void handleAnalyzeFrame()}
+            disabled={visionAnalyzing || !activeUserId}
+            className={`w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-medium transition-colors duration-75 ${
+              visionAnalyzing || !activeUserId
+                ? "bg-ghost-surface-hover text-ghost-text-muted cursor-not-allowed"
+                : "bg-ghost-accent text-white hover:bg-ghost-accent/90"
+            }`}
+          >
+            <Eye size={12} />
+            {visionAnalyzing ? "מנתח פריים..." : "נתח פריים עם הספק הנבחר"}
+          </button>
+          {visionNoFrame && (
+            <p className="text-[10px] text-ghost-text-muted leading-snug">
+              אין פריים זמין — הפעל מצלמה חיה או המתן לסריקת מעקב.
+            </p>
+          )}
+          {visionError && (
+            <p className="text-[10px] text-ghost-error leading-snug">{visionError}</p>
+          )}
+          {visionResult && (
+            <div className="rounded border border-ghost-border-subtle bg-ghost-bg-secondary p-2 space-y-1">
+              <p className="text-[10px] text-ghost-text-muted font-mono">
+                {visionResult.provider} · {visionResult.model}
+                {typeof visionResult.latency_ms === "number"
+                  ? ` · ${visionResult.latency_ms}ms`
+                  : ""}
+              </p>
+              {visionResult.fallback_status &&
+                visionResult.fallback_status !== "none" && (
+                  <p className="text-[10px] text-amber-400/90 leading-snug">
+                    {visionResult.fallback_status === "openai_after_local_failure"
+                      ? `Local VLM נכשל — fallback ל-OpenAI${
+                          visionResult.fallback_reason
+                            ? `: ${visionResult.fallback_reason}`
+                            : ""
+                        }`
+                      : visionResult.fallback_status === "openai_local_unconfigured"
+                        ? "Local VLM לא מוגדר — נותח דרך OpenAI"
+                        : visionResult.fallback_status}
+                  </p>
+                )}
+              {(visionResult.summary ??
+                visionResult.text ??
+                visionResult.analysis ??
+                visionResult.content) && (
+                <p className="text-[11px] text-ghost-text-secondary leading-snug line-clamp-4">
+                  {visionResult.summary ??
+                    visionResult.text ??
+                    visionResult.analysis ??
+                    visionResult.content}
+                </p>
+              )}
+              {visionResult.risk_level && visionResult.risk_level !== "unknown" && (
+                <p className="text-[10px] text-ghost-text-muted">
+                  סיכון: {visionResult.risk_level}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Batch progress + controls */}

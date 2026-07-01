@@ -20,6 +20,7 @@ from app.routes import (
     chat,
     conversations,
     detection,
+    vision,
     downloads,
     expert,
     health,
@@ -274,6 +275,7 @@ app.include_router(knowledge.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
 app.include_router(incidents.router, prefix="/api")
 app.include_router(detection.router, prefix="/api")
+app.include_router(vision.router, prefix="/api")
 app.include_router(downloads.router, prefix="/api")
 app.include_router(applications.router, prefix="/api")
 app.include_router(tasks.router, prefix="/api")

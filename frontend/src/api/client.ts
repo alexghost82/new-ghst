@@ -46,6 +46,25 @@ import type {
   EscalationContact,
 } from "../types/api";
 import { sanitizeBrand } from "../utils/sanitize";
+import type { VisionProvider } from "../stores/visionProviderStore";
+
+export interface LocalVisionAnalyzeResult {
+  provider: string;
+  model: string;
+  summary?: string;
+  risk_level?: string;
+  objects?: unknown[];
+  actions?: string[];
+  recommended_alert?: boolean;
+  latency_ms?: number;
+  fallback_status?: string;
+  fallback_reason?: string;
+  error?: string;
+  /** @deprecated legacy aliases — prefer summary */
+  text?: string;
+  analysis?: string;
+  content?: string;
+}
 
 const BASE = "/api";
 
@@ -1281,5 +1300,27 @@ export const api = {
     return request<IncidentKPI>(
       `/incidents/kpi?user_id=${encodeURIComponent(userId)}&window_hours=${windowHours}`,
     );
+  },
+
+  analyzeLocalVision(params: {
+    user_id: string;
+    image_base64: string;
+    prompt?: string;
+    conversation_id?: string;
+    camera_id?: string;
+    provider?: VisionProvider;
+  }) {
+    const payload: Record<string, unknown> = {
+      user_id: params.user_id,
+      image_base64: params.image_base64,
+    };
+    if (params.prompt) payload.prompt = params.prompt;
+    if (params.conversation_id) payload.conversation_id = params.conversation_id;
+    if (params.camera_id) payload.camera_id = params.camera_id;
+    if (params.provider) payload.provider = params.provider;
+    return request<LocalVisionAnalyzeResult>("/vision/local-analyze", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   },
 };
