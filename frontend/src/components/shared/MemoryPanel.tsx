@@ -795,10 +795,38 @@ export default function MemoryPanel({ onClose }: MemoryPanelProps) {
             <div className="rounded border border-ghost-border-subtle bg-ghost-bg-secondary p-2 space-y-1">
               <p className="text-[10px] text-ghost-text-muted font-mono">
                 {visionResult.provider} · {visionResult.model}
+                {typeof visionResult.latency_ms === "number"
+                  ? ` · ${visionResult.latency_ms}ms`
+                  : ""}
               </p>
-              {(visionResult.text ?? visionResult.analysis ?? visionResult.content) && (
+              {visionResult.fallback_status &&
+                visionResult.fallback_status !== "none" && (
+                  <p className="text-[10px] text-amber-400/90 leading-snug">
+                    {visionResult.fallback_status === "openai_after_local_failure"
+                      ? `Local VLM נכשל — fallback ל-OpenAI${
+                          visionResult.fallback_reason
+                            ? `: ${visionResult.fallback_reason}`
+                            : ""
+                        }`
+                      : visionResult.fallback_status === "openai_local_unconfigured"
+                        ? "Local VLM לא מוגדר — נותח דרך OpenAI"
+                        : visionResult.fallback_status}
+                  </p>
+                )}
+              {(visionResult.summary ??
+                visionResult.text ??
+                visionResult.analysis ??
+                visionResult.content) && (
                 <p className="text-[11px] text-ghost-text-secondary leading-snug line-clamp-4">
-                  {visionResult.text ?? visionResult.analysis ?? visionResult.content}
+                  {visionResult.summary ??
+                    visionResult.text ??
+                    visionResult.analysis ??
+                    visionResult.content}
+                </p>
+              )}
+              {visionResult.risk_level && visionResult.risk_level !== "unknown" && (
+                <p className="text-[10px] text-ghost-text-muted">
+                  סיכון: {visionResult.risk_level}
                 </p>
               )}
             </div>

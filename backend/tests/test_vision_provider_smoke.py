@@ -62,6 +62,8 @@ _REQUIRED_RESPONSE_KEYS = (
     "objects",
     "actions",
     "recommended_alert",
+    "latency_ms",
+    "fallback_status",
 )
 
 
@@ -294,7 +296,11 @@ def test_local_analyze_endpoint() -> None:
     }
 
     async def fake_analyze_local_vision(**kwargs: Any) -> dict[str, Any]:
-        return dict(mock_payload)
+        return {
+            **mock_payload,
+            "latency_ms": 42,
+            "fallback_status": "none",
+        }
 
     from app.main import app
     import app.routes.vision as vision_routes

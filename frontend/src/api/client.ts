@@ -51,6 +51,16 @@ import type { VisionProvider } from "../stores/visionProviderStore";
 export interface LocalVisionAnalyzeResult {
   provider: string;
   model: string;
+  summary?: string;
+  risk_level?: string;
+  objects?: unknown[];
+  actions?: string[];
+  recommended_alert?: boolean;
+  latency_ms?: number;
+  fallback_status?: string;
+  fallback_reason?: string;
+  error?: string;
+  /** @deprecated legacy aliases — prefer summary */
   text?: string;
   analysis?: string;
   content?: string;

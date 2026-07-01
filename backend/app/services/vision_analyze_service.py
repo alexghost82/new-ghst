@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, Literal
 
 from app.config import settings
@@ -48,8 +49,11 @@ def _provider_result(
     provider: str,
     model: str,
     analysis: dict[str, Any],
+    latency_ms: int | None = None,
+    fallback_status: str = "none",
+    fallback_reason: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    result: dict[str, Any] = {
         "provider": provider,
         "model": model,
         "summary": analysis.get("summary") or "",
@@ -60,6 +64,13 @@ def _provider_result(
         **({"raw_text": analysis["raw_text"]} if analysis.get("raw_text") else {}),
         **({"error": analysis["error"]} if analysis.get("error") else {}),
     }
+    if latency_ms is not None:
+        result["latency_ms"] = latency_ms
+    if fallback_status != "none":
+        result["fallback_status"] = fallback_status
+    if fallback_reason:
+        result["fallback_reason"] = fallback_reason
+    return result
 
 
 async def _analyze_with_local_vlm(
@@ -238,8 +249,9 @@ async def _analyze_direct_fallback(
     api_key: str | None,
     provider_override: VisionProviderChoice | None,
 ) -> dict[str, Any]:
-    """Used when :mod:`vision_provider` is not available yet."""
+    """Route scene analysis to local VLM and/or OpenAI with optional fallback."""
     provider = _effective_provider(provider_override)
+    requested = (provider_override or settings.vision_provider or "openai").strip().lower()
 
     if provider == "openai":
         return await _analyze_with_openai(image_base64, prompt, api_key=api_key)
@@ -260,17 +272,30 @@ async def _analyze_direct_fallback(
             )
         return await _analyze_with_local_vlm(image_base64, prompt)
 
+    # auto
     if _local_vlm_configured():
         local_result = await _analyze_with_local_vlm(image_base64, prompt)
         if not local_result.get("error"):
+            local_result["fallback_status"] = "none"
             return local_result
         logger.info(
             "Local VLM failed (%s); falling back to OpenAI",
             local_result.get("error"),
         )
-    else:
-        logger.debug("Local VLM not configured; using OpenAI for auto provider")
-    return await _analyze_with_openai(image_base64, prompt, api_key=api_key)
+        openai_result = await _analyze_with_openai(
+            image_base64, prompt, api_key=api_key
+        )
+        openai_result["fallback_status"] = "openai_after_local_failure"
+        openai_result["fallback_reason"] = local_result.get("error") or local_result.get(
+            "fallback_reason"
+        )
+        return openai_result
+
+    logger.debug("Local VLM not configured; using OpenAI for auto provider")
+    openai_result = await _analyze_with_openai(image_base64, prompt, api_key=api_key)
+    if requested == "auto":
+        openai_result["fallback_status"] = "openai_local_unconfigured"
+    return openai_result
 
 
 async def analyze_local_vision(
@@ -307,9 +332,13 @@ async def analyze_local_vision(
             f"{effective_prompt}\n\nCamera identifier: {camera_id.strip()}"
         )
 
-    return await _analyze_direct_fallback(
+    started = time.perf_counter()
+    result = await _analyze_direct_fallback(
         image_base64,
         effective_prompt,
         api_key=api_key,
         provider_override=provider_override,
     )
+    result["latency_ms"] = int((time.perf_counter() - started) * 1000)
+    result.setdefault("fallback_status", "none")
+    return result
