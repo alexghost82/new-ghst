@@ -201,6 +201,22 @@ def _local_vlm_configured(cfg: Settings | None = None) -> bool:
     return bool(active.local_vlm_enabled and (active.local_vlm_base_url or "").strip())
 
 
+def resolve_effective_provider(
+    provider_override: str | None = None,
+    cfg: Settings | None = None,
+) -> str:
+    """Resolve request override, configured mode, and local availability."""
+    active = cfg or settings
+    raw = (provider_override or active.vision_provider or "openai").strip().lower()
+    if raw not in ("openai", "local_vlm", "auto"):
+        raw = "openai"
+    if raw == "openai":
+        return "openai"
+    if raw == "local_vlm":
+        return "local_vlm" if _local_vlm_configured(active) else "openai"
+    return "local_vlm" if _local_vlm_configured(active) else "openai"
+
+
 def resolve_vision_provider(cfg: Settings | None = None) -> str:
     """Return the effective primary vision provider name."""
     active = cfg or settings
